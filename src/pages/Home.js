@@ -1,7 +1,7 @@
 /**
- * Datafund Consent generator & viewer 
- * Licensed under the MIT license 
- * Created by Markus Zevnik, Tadej Fius, Èrt Ahlin 
+ * Datafund Consent generator & viewer
+ * Licensed under the MIT license
+ * Created by Markus Zevnik, Tadej Fius, ï¿½rt Ahlin
  */
 
 import React, { Component } from 'react';
@@ -33,7 +33,7 @@ import exportFromJSON from 'export-from-json'
 import classnames from 'classnames';
 import Loader from "react-loader-advanced";
 import config from "../projectConfiguration";
-import {ConsentViewer as ConsentViewer} from "consent-viewer";
+import {ConsentViewer as ConsentViewer} from "@datafund/consent-viewer";
 
 
 const log = (type) => console.log.bind(console, type);
