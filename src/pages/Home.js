@@ -4,7 +4,7 @@
  * Created by Markus Zevnik, Tadej Fius, �rt Ahlin
  */
 
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
     Collapse,
     Navbar,
@@ -31,6 +31,7 @@ import uuidv4 from "uuid/v4";
 import {JsonEditor} from 'jsoneditor-react';
 import exportFromJSON from 'export-from-json'
 import classnames from 'classnames';
+import fileDownload from 'js-file-download';
 import Loader from "react-loader-advanced";
 import config from "../projectConfiguration";
 import {ConsentViewer as ConsentViewer} from "@datafund/consent-viewer";
@@ -54,6 +55,7 @@ class App extends Component {
             schemaVisible: false,
             uiSchemaVisible: false,
             formDataVisible: false,
+            encodeJwtVisible: false,
             jwtTokenEncodedVisible: false,
             jwtTokenDecodedVisible: false,
             projectConfigurationVisible: false,
@@ -79,6 +81,7 @@ class App extends Component {
         this.onSchemaChange = this.onSchemaChange.bind(this);
         this.onUiSchemaChange = this.onUiSchemaChange.bind(this);
 
+        this.downloadJwt = this.downloadJwt.bind(this);
         this.downloadProjectConfigFile = this.downloadProjectConfigFile.bind(this);
         this.onInputFileChange = this.onInputFileChange.bind(this);
         this.readDefaultProperties = this.readDefaultProperties.bind(this);
@@ -106,7 +109,7 @@ class App extends Component {
 
         _.each(_this.state.defaultProperties, function (val, key) {
 
-            if(_this.state.schema.properties[key]) {
+            if (_this.state.schema.properties[key]) {
                 if (_this.state.schema.properties[key].default) {
                     delete _this.state.schema.properties[key].default;
                 }
@@ -320,6 +323,13 @@ class App extends Component {
         exportFromJSON({data, fileName, exportType});
     }
 
+    downloadJwt() {
+        const _this = this;
+
+        let decoded = jwt.decode(_this.state.jwtToken, {complete: true});
+
+        fileDownload(_this.state.jwtToken, "consent_receipt_" + decoded.payload.iat + '.jwt.cr');
+    }
 
     render() {
         const _this = this;
@@ -489,18 +499,41 @@ class App extends Component {
                                                         json={this.state.formData}
                                                         themeClassName="json-pretty"></JSONPretty>
 
+                                                </div>
+                                            </Collapse>
+                                        </ListGroupItem>
+
+
+                                    </ListGroup>
+
+                                    <ListGroup className="mt-3">
+
+                                        <ListGroupItem>
+                                            <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                                _this.setState({encodeJwtVisible: !_this.state.encodeJwtVisible})
+                                            }}><i
+                                                className={_this.state.encodeJwtVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Encode
+                                                JWT</ListGroupItemHeading>
+                                            <Collapse isOpen={this.state.encodeJwtVisible}>
+                                                <div>
+
+                                                    {_.isEmpty(_this.state.formData, true) &&
+                                                    <em><i className="fa fa-exclamation-triangle"></i> To Encode JWT
+                                                        form Data must not be empty!</em>
+                                                    }
 
                                                     {!_.isEmpty(_this.state.formData, true) &&
                                                     <div>
                                                         <h5 className="mt-4">Encode</h5>
                                                         <Nav tabs>
+
                                                             <NavItem>
                                                                 <NavLink
                                                                     className={classnames({active: this.state.algorithmTab === '1'})}
                                                                     onClick={() => {
                                                                         this.setState({algorithmTab: '1'});
                                                                     }}>
-                                                                    HS256
+                                                                    RS256
                                                                 </NavLink>
                                                             </NavItem>
                                                             <NavItem>
@@ -509,32 +542,15 @@ class App extends Component {
                                                                     onClick={() => {
                                                                         this.setState({algorithmTab: '2'});
                                                                     }}>
-                                                                    RS256
+                                                                    HS256
                                                                 </NavLink>
+
                                                             </NavItem>
                                                         </Nav>
                                                         <TabContent activeTab={this.state.algorithmTab}
                                                                     className="mt-3">
+
                                                             <TabPane tabId="1">
-
-                                                                <div className="form-group"><label
-                                                                    htmlFor="root_version">256 bit secret</label><input
-                                                                    className="form-control" id="secret"
-                                                                    label="version" required=""
-                                                                    placeholder="insert secret"
-                                                                    type="text" onChange={e => {
-                                                                    _this.setState({secret: e.target.value});
-                                                                }}/></div>
-
-
-                                                                <a className="btn btn-success text-white mt-3 mb-3"
-                                                                   onClick={(e) => {
-                                                                       _this.generateJwtHS256()
-                                                                   }}><i className="fas fa-certificate"></i> Encode JWT
-                                                                    (HS256)</a>
-
-                                                            </TabPane>
-                                                            <TabPane tabId="2">
 
                                                                 <div className="form-group"><label
                                                                     htmlFor="root_version">RSA Private Key</label>
@@ -550,10 +566,38 @@ class App extends Component {
 
                                                                 <a className="btn btn-success text-white mt-3 mb-3"
                                                                    onClick={(e) => {
+                                                                       if (_this.state.privateKey === '') {
+                                                                           alert("Valid private key is required!");
+                                                                           return;
+                                                                       }
                                                                        _this.generateJwtRS256()
-                                                                   }}><i className="fas fa-certificate"></i> Encode JWT
+                                                                   }}><i className="fas fa-lock"></i> Encode JWT
                                                                     (RS256)
                                                                 </a>
+
+                                                            </TabPane>
+
+                                                            <TabPane tabId="2">
+
+                                                                <div className="form-group"><label
+                                                                    htmlFor="root_version">256 bit secret</label><input
+                                                                    className="form-control" id="secret"
+                                                                    label="version" required=""
+                                                                    placeholder="insert secret"
+                                                                    type="text" onChange={e => {
+                                                                    _this.setState({secret: e.target.value});
+                                                                }}/></div>
+
+
+                                                                <a className="btn btn-success text-white mt-3 mb-3"
+                                                                   onClick={(e) => {
+                                                                       if (_this.state.secret === '') {
+                                                                           alert("256 bit secret string is required!");
+                                                                           return;
+                                                                       }
+                                                                       _this.generateJwtHS256()
+                                                                   }}><i className="fas fa-lock"></i> Encode JWT
+                                                                    (HS256)</a>
 
                                                             </TabPane>
                                                         </TabContent>
@@ -569,8 +613,8 @@ class App extends Component {
                                             <ListGroupItemHeading className="m-0" onClick={(e) => {
                                                 _this.setState({jwtTokenEncodedVisible: !_this.state.jwtTokenEncodedVisible})
                                             }}><i
-                                                className={_this.state.jwtTokenEncodedVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> JWT
-                                                Token (encoded)</ListGroupItemHeading>
+                                                className={_this.state.jwtTokenEncodedVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Encoded
+                                                JWT</ListGroupItemHeading>
                                             {!_.isEmpty(_this.state.jwtToken, true) &&
                                             <Collapse isOpen={this.state.jwtTokenEncodedVisible}>
                                                 <div>
@@ -580,22 +624,24 @@ class App extends Component {
 
 
                                                     <div>
-                                                        <a className="btn btn-success text-white mt-3" onClick={(e) => {
-                                                            _this.decodeJwt()
-                                                        }}><i className="fas fa-certificate"></i> Decode JWT</a><br/>
+                                                        <a className="btn btn-success text-white mt-3 mr-1"
+                                                           onClick={(e) => {
+                                                               _this.downloadJwt()
+                                                           }}><i className="fas fa-download"></i> Download JWT</a>
                                                     </div>
 
 
                                                     <h5 className="mt-4">Verify signature</h5>
 
                                                     <Nav tabs>
+
                                                         <NavItem>
                                                             <NavLink
                                                                 className={classnames({active: this.state.algorithmTab === '1'})}
                                                                 onClick={() => {
                                                                     this.setState({algorithmTab: '1'});
                                                                 }}>
-                                                                HS256
+                                                                RS256
                                                             </NavLink>
                                                         </NavItem>
                                                         <NavItem>
@@ -604,30 +650,13 @@ class App extends Component {
                                                                 onClick={() => {
                                                                     this.setState({algorithmTab: '2'});
                                                                 }}>
-                                                                RS256
+                                                                HS256
                                                             </NavLink>
                                                         </NavItem>
                                                     </Nav>
                                                     <TabContent activeTab={this.state.algorithmTab} className="mt-3">
+
                                                         <TabPane tabId="1">
-
-                                                            <div className="form-group"><label
-                                                                htmlFor="root_version">256 bit secret</label><input
-                                                                className="form-control" id="secret"
-                                                                label="version" required="" placeholder="insert secret"
-                                                                type="text" onChange={e => {
-                                                                _this.setState({secret: e.target.value});
-                                                            }}/></div>
-
-
-                                                            <a className="btn btn-success text-white mt-3"
-                                                               onClick={(e) => {
-                                                                   _this.verifyJwtHS256()
-                                                               }}><i className="fas fa-certificate"></i> Verify
-                                                                Signature (HS256)</a>
-
-                                                        </TabPane>
-                                                        <TabPane tabId="2">
 
                                                             <div className="form-group"><label
                                                                 htmlFor="root_version">RSA Public Key</label> <textarea
@@ -646,6 +675,31 @@ class App extends Component {
                                                                    _this.verifyJwtRS256()
                                                                }}><i className="fas fa-certificate"></i> Verify
                                                                 Signature (RS256)</a>
+
+                                                        </TabPane>
+
+                                                        <TabPane tabId="2">
+
+                                                            <div className="form-group"><label
+                                                                htmlFor="root_version">256 bit secret</label><input
+                                                                className="form-control" id="secret"
+                                                                label="version" required="" placeholder="insert secret"
+                                                                type="text" onChange={e => {
+                                                                _this.setState({secret: e.target.value});
+                                                            }}/></div>
+
+
+                                                            <a className="btn btn-success text-white mt-3"
+                                                               onClick={(e) => {
+                                                                   _this.verifyJwtHS256()
+                                                               }}><i className="fas fa-certificate"></i> Verify
+                                                                Signature (HS256)</a>
+
+                                                            <br/>
+
+                                                            <a className="btn btn-success text-white mt-3" onClick={(e) => {
+                                                                _this.decodeJwt()
+                                                            }}><i className="fas fa-unlock"></i> Decode JWT</a><br/>
 
                                                         </TabPane>
                                                     </TabContent>
@@ -667,8 +721,8 @@ class App extends Component {
                                             <ListGroupItemHeading className="m-0" onClick={(e) => {
                                                 _this.setState({jwtTokenDecodedVisible: !_this.state.jwtTokenDecodedVisible})
                                             }}><i
-                                                className={_this.state.jwtTokenDecodedVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> JWT
-                                                Token (decoded)</ListGroupItemHeading>
+                                                className={_this.state.jwtTokenDecodedVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Decoded
+                                                JWT</ListGroupItemHeading>
                                             {!_.isEmpty(_this.state.jwtTokenDecoded, true) &&
                                             <Collapse isOpen={this.state.jwtTokenDecodedVisible}>
                                                 <div>
@@ -680,6 +734,10 @@ class App extends Component {
                                             </Collapse>
                                             }
                                         </ListGroupItem>
+
+                                    </ListGroup>
+
+                                    <ListGroup className="mt-3 mb-3">
 
                                         <ListGroupItem>
                                             <ListGroupItemHeading className="m-0" onClick={(e) => {
@@ -761,8 +819,9 @@ class App extends Component {
                                         formData={this.state.formData}
                                         uiSchema={this.state.uiSchema}
                                         onChange={this.onFormDataChange}
-                                        onSubmit={log("submitted")}
-                                        onError={log("errors")}/>
+                                        onError={log("errors")}>
+                                        <br/> {/*<br/> workaround to hide submit button*/}
+                                    </Form>
 
                                 </Loader>
 
@@ -774,16 +833,20 @@ class App extends Component {
 
                                 <h4 className="mt-1">Consent receipt viewer</h4>
 
-                                <ConsentViewer type="text" data={this.state.jwtTokenDecoded}/>
+                                <div className="mt-3">
+                                    <ConsentViewer type="text" data={this.state.jwtTokenDecoded}/>
+                                </div>
 
                                 {/*<div className="jsonViewer">*/}
                                 {/*    <JsonTable json={this.state.jwtTokenDecoded}/>*/}
                                 {/*</div>*/}
 
+                                {!_.isEmpty(_this.state.jwtTokenDecoded, true) &&
                                 <JSONPretty
                                     className="p-2 mt-3"
                                     json={this.state.jwtTokenDecoded}
                                     themeClassName="json-pretty"></JSONPretty>
+                                }
 
                             </div>
                             }

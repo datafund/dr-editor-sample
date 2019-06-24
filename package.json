@@ -2,8 +2,13 @@
   "name": "sample-react-app",
   "version": "0.1.0",
   "private": true,
+  "description": "Sample Consent Receipt (CR) editor React app.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/datafund/dr-editor-sample.git"
+  },
   "dependencies": {
-    "@datafund/consent-viewer": "^0.1.0",
+    "@datafund/consent-viewer": "^0.1.4",
     "base64json": "^1.0.3",
     "bootstrap": "^4.1.3",
     "classnames": "^2.2.6",
@@ -23,7 +28,8 @@
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.1.8",
     "reactstrap": "^5.0.0",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "js-file-download": "^0.4.7"
   },
   "peerDependencies": {
     "jquery": "^3.4.1"
@@ -44,5 +50,9 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "bugs": {
+    "url": "https://github.com/datafund/dr-editor-sample/issues"
+  },
+  "homepage": "https://github.com/datafund/dr-editor-sample#readme"
 }
