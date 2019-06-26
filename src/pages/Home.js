@@ -654,6 +654,8 @@ class App extends Component {
                                                             </NavLink>
                                                         </NavItem>
                                                     </Nav>
+
+
                                                     <TabContent activeTab={this.state.algorithmTab} className="mt-3">
 
                                                         <TabPane tabId="1">
@@ -695,14 +697,14 @@ class App extends Component {
                                                                }}><i className="fas fa-certificate"></i> Verify
                                                                 Signature (HS256)</a>
 
-                                                            <br/>
-
-                                                            <a className="btn btn-success text-white mt-3" onClick={(e) => {
-                                                                _this.decodeJwt()
-                                                            }}><i className="fas fa-unlock"></i> Decode JWT</a><br/>
-
                                                         </TabPane>
+
                                                     </TabContent>
+
+
+                                                    <a className="btn btn-success text-white mt-3" onClick={(e) => {
+                                                        _this.decodeJwt()
+                                                    }}><i className="fas fa-unlock"></i> Decode JWT</a><br/>
 
                                                     {!_.isEmpty(_this.state.signature, true) &&
                                                     <JSONPretty
