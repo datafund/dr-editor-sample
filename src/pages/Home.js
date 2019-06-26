@@ -89,8 +89,13 @@ class App extends Component {
     }
 
     componentDidMount() {
-        this.generateUUID();
-        this.readDefaultProperties();
+        const _this = this;
+
+        setTimeout(function(){
+            _this.readDefaultProperties();
+            _this.generateUUID();
+        },100);
+
     }
 
     generateUUID() {
@@ -114,16 +119,22 @@ class App extends Component {
                     delete _this.state.schema.properties[key].default;
                 }
                 _.assign(_this.state.schema.properties[key], {"default": val});
+                _this.state.formData[key] = val;
             }
 
-            if (_this.state.formData[key]) {
-                delete _this.state.formData[key];
-            }
-            _.assign(_this.state.formData, {[key]: val});
+            // if (_this.state.formData[key]) {
+            //     delete _this.state.formData[key];
+            // }
+
+            _this.forceUpdate();
+            console.log("val ", val);
+            console.log("key ", key);
+            console.log("_this.state.formData", _this.state.formData);
+
         });
 
         _this.setState({loadingInProgress: false});
-        _this.forceUpdate();
+        //_this.forceUpdate();
     }
 
     onFormDataChange(val) {
@@ -177,7 +188,7 @@ class App extends Component {
             reader.readAsDataURL(file);
             console.log(reader);
         } else {
-            console.log('Soryy, your browser does\'nt support for preview');
+            console.log('Sorry, your browser doesn\'t support for preview');
         }
     }
 
@@ -204,6 +215,7 @@ class App extends Component {
         _this.setState({
             jwtToken: jwtToken,
             jwtTokenEncodedVisible: true,
+            secret: ''
         });
         console.log(jwtToken);
     }
@@ -216,15 +228,8 @@ class App extends Component {
         console.log("PRIVATE KEY: ", _this.state.privateKey);
         console.log(_this.state.cleanFormData);
 
-        let options = {
-            issuer: 'issuer',
-            subject: 'subject',
-            audience: 'audience',
-            expiresIn: "12h",
-            algorithm: "RS256"
-        };
 
-        let jwtToken = jwt.sign(_this.state.cleanFormData, _this.state.privateKey, options);
+        let jwtToken = jwt.sign(_this.state.cleanFormData, _this.state.privateKey, config.defaultProperties.tokenSigningOptions);
 
         _this.setState({
             jwtToken: jwtToken,
@@ -252,7 +257,6 @@ class App extends Component {
             algorithm: "HS256"
         };
 
-
         try {
             let legit = jwt.verify(_this.state.jwtToken, _this.state.secret, verifyOptions);
             console.log("LEGIT", legit);
@@ -270,13 +274,8 @@ class App extends Component {
 
         console.log("_this.state.formData.publicKey ", _this.state.formData.publicKey);
 
-        let verifyOptions = {
-            issuer: 'issuer',
-            subject: 'subject',
-            audience: 'audience',
-            expiresIn: "12h",
-            algorithm: "RS256"
-        };
+        let verifyOptions = config.defaultProperties.tokenSigningOptions;
+        verifyOptions.algorithm = "RS256";
 
         try {
             let legit = jwt.verify(_this.state.jwtToken, _this.state.formData.publicKey, verifyOptions);
@@ -706,12 +705,12 @@ class App extends Component {
                                                         _this.decodeJwt()
                                                     }}><i className="fas fa-unlock"></i> Decode JWT</a><br/>
 
-                                                    {!_.isEmpty(_this.state.signature, true) &&
-                                                    <JSONPretty
-                                                        className="p-2 mt-3"
-                                                        json={this.state.signature}
-                                                        themeClassName="json-pretty"></JSONPretty>
-                                                    }
+                                                    {/*{!_.isEmpty(_this.state.signature, true) &&*/}
+                                                    {/*<JSONPretty*/}
+                                                    {/*    className="p-2 mt-3"*/}
+                                                    {/*    json={this.state.signature}*/}
+                                                    {/*    themeClassName="json-pretty"></JSONPretty>*/}
+                                                    {/*}*/}
 
                                                 </div>
                                             </Collapse>
@@ -779,7 +778,7 @@ class App extends Component {
 
 
                                                 </div>
-                                                {/*<a className="btn btn-primary mt-2"><i className="fa fa-upload"></i> Upload Project Configuration File</a>*/}
+
                                             </Collapse>
                                         </ListGroupItem>
 
@@ -817,10 +816,10 @@ class App extends Component {
                                         ref={(form) => {
                                             reactJsonSchemaForm = form;
                                         }}
-                                        schema={this.state.schema}
-                                        formData={this.state.formData}
-                                        uiSchema={this.state.uiSchema}
-                                        onChange={this.onFormDataChange}
+                                        schema={_this.state.schema}
+                                        formData={_this.state.formData}
+                                        uiSchema={_this.state.uiSchema}
+                                        onChange={_this.onFormDataChange}
                                         onError={log("errors")}>
                                         <br/> {/*<br/> workaround to hide submit button*/}
                                     </Form>

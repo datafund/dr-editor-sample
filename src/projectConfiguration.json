@@ -331,6 +331,12 @@
 
   },
   "defaultProperties": {
-    "jurisdiction": "SI"
+    "jurisdiction": "SI",
+    "tokenSigningOptions": {
+      "issuer": "Datafund",
+      "subject": "Consent Receipt",
+      "audience": "https://datafund.io",
+      "expiresIn": "12h"
+    }
   }
 }
