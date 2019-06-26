@@ -8,7 +8,7 @@
     "url": "git+https://github.com/datafund/dr-editor-sample.git"
   },
   "dependencies": {
-    "@datafund/consent-viewer": "^0.1.4",
+    "@datafund/consent-viewer": "^0.1.5",
     "base64json": "^1.0.3",
     "bootstrap": "^4.1.3",
     "classnames": "^2.2.6",
