@@ -63,6 +63,7 @@ class App extends Component {
             uiSchemaTab: '1',
             formDataTab: '1',
             algorithmTab: '1',
+            projectConfigurationTab: '1',
             loadingInProgress: false,
             mode: 'editor',
             secret: '',
@@ -79,6 +80,7 @@ class App extends Component {
 
         this.onFormDataChange = this.onFormDataChange.bind(this);
         this.onSchemaChange = this.onSchemaChange.bind(this);
+        this.onDefaultPropertiesChange = this.onDefaultPropertiesChange.bind(this);
         this.onUiSchemaChange = this.onUiSchemaChange.bind(this);
 
         this.downloadJwt = this.downloadJwt.bind(this);
@@ -306,6 +308,16 @@ class App extends Component {
         });
     }
 
+    onDefaultPropertiesChange(val) {
+        const _this = this;
+        console.log(val);
+        _this.setState({
+            defaultProperties: val
+        });
+
+        _this.readDefaultProperties();
+    }
+
     // onFormDataChange(val) {
     //     console.log(val);
     // }
@@ -409,9 +421,9 @@ class App extends Component {
                                                                     onChange={_this.onSchemaChange}
                                                                 />
 
-                                                                <a className="btn btn-primary">
-                                                                    <i className="fa fa-check"> Confirm changes</i>
-                                                                </a>
+                                                                {/*<a className="btn btn-primary">*/}
+                                                                {/*    <i className="fa fa-check"> Confirm changes</i>*/}
+                                                                {/*</a>*/}
 
 
                                                             </div>
@@ -752,10 +764,51 @@ class App extends Component {
 
                                                 <div>
 
-                                                    <JSONPretty
-                                                        className="p-2 mt-3"
-                                                        json={this.state.defaultProperties}
-                                                        themeClassName="json-pretty"></JSONPretty>
+                                                    <Nav tabs className="mt-4">
+                                                        <NavItem>
+                                                            <NavLink
+                                                                className={classnames({active: this.state.projectConfigurationTab === '1'})}
+                                                                onClick={() => {
+                                                                    this.setState({projectConfigurationTab: '1'});
+                                                                }}>
+                                                                JSON
+                                                            </NavLink>
+                                                        </NavItem>
+                                                        <NavItem>
+                                                            <NavLink
+                                                                className={classnames({active: this.state.projectConfigurationTab === '2'})}
+                                                                onClick={() => {
+                                                                    this.setState({projectConfigurationTab: '2'});
+                                                                }}>
+
+                                                                JSON Editor
+                                                            </NavLink>
+                                                        </NavItem>
+                                                    </Nav>
+                                                    <TabContent activeTab={this.state.projectConfigurationTab}>
+                                                        <TabPane tabId="1">
+
+                                                            <JSONPretty
+                                                                className="p-2 mt-3"
+                                                                json={this.state.defaultProperties}
+                                                                themeClassName="json-pretty"></JSONPretty>
+
+
+                                                        </TabPane>
+                                                        <TabPane tabId="2">
+
+                                                            {!_.isEmpty(_this.state.defaultProperties, true) &&
+                                                            <div class="mt-3">
+                                                                <JsonEditor
+                                                                    value={_this.state.defaultProperties}
+                                                                    onChange={_this.onDefaultPropertiesChange}
+                                                                />
+
+                                                            </div>
+                                                            }
+
+                                                        </TabPane>
+                                                    </TabContent>
 
                                                     <a className="btn btn-primary mt-3 mb-2"
                                                        onClick={_this.downloadProjectConfigFile}><i
