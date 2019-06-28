@@ -93,10 +93,10 @@ class App extends Component {
     componentDidMount() {
         const _this = this;
 
-        setTimeout(function(){
+        setTimeout(function () {
             _this.readDefaultProperties();
             _this.generateUUID();
-        },100);
+        }, 100);
 
     }
 
@@ -123,10 +123,6 @@ class App extends Component {
                 _.assign(_this.state.schema.properties[key], {"default": val});
                 _this.state.formData[key] = val;
             }
-
-            // if (_this.state.formData[key]) {
-            //     delete _this.state.formData[key];
-            // }
 
             _this.forceUpdate();
             console.log("val ", val);
@@ -160,37 +156,48 @@ class App extends Component {
     onInputFileChange(e) {
         const _this = this;
 
-        _this.setState({loadingInProgress: true});
-
         if (window.FileReader) {
-            let file = e.target.files[0], reader = new FileReader();
-            reader.onload = function (r) {
-                console.log(r.target.result);
-                console.log(r.target.result.substr(29));
-                console.log(window.atob(r.target.result.substr(29)));
 
-                let importedData = JSON.parse(window.atob(r.target.result.substr(29)));
+            _this.setState({loadingInProgress: true});
 
-                console.log(importedData);
+            let file = e.target.files[0]
+            let reader = new FileReader();
 
-                _this.state.schema = importedData[0].schema;
-                _this.state.uiSchema = importedData[1].uiSchema;
-                _this.state.formData = importedData[2].formData;
-                _this.state.defaultProperties = importedData[3].defaultProperties;
+            if (file) {
+                reader.onload = function (r) {
+                    console.log(r.target.result);
+                    console.log(r.target.result.substr(29));
+                    console.log(window.atob(r.target.result.substr(29)));
 
-                _this.forceUpdate();
+                    let importedData = JSON.parse(window.atob(r.target.result.substr(29)));
 
-                setTimeout(function () {
-                    _this.readDefaultProperties();
-                }, 1000);
+                    console.log(importedData);
+
+                    _this.state.schema = importedData.schema;
+                    _this.state.uiSchema = importedData.uiSchema;
+                    _this.state.formData = importedData.formData;
+                    _this.state.defaultProperties = importedData.defaultProperties;
+
+                    _this.forceUpdate();
+
+                    setTimeout(function () {
+                        _this.readDefaultProperties();
+                    }, 1000);
 
 
+                    _this.setState({loadingInProgress: false});
+                }
+
+
+                reader.readAsDataURL(file);
+                console.log(reader);
+                console.log(file);
+            } else {
                 _this.setState({loadingInProgress: false});
+                alert("Could not upload configuration because configuration file was not selected!");
             }
-            reader.readAsDataURL(file);
-            console.log(reader);
         } else {
-            console.log('Sorry, your browser doesn\'t support for preview');
+            alert('Sorry, your browser doesn\'t support for preview');
         }
     }
 
@@ -325,9 +332,15 @@ class App extends Component {
     downloadProjectConfigFile() {
         const _this = this;
 
-        let data = '[{"schema":' + JSON.stringify(_this.state.schema) + '},{"uiSchema":' + JSON.stringify(_this.state.uiSchema) + '},{"formData":' + JSON.stringify(_this.state.formData) + '},{"defaultProperties":' + JSON.stringify(_this.state.defaultProperties) + '}]';
+        let data = {
+            "schema": _this.state.schema,
+            "uiSchema": _this.state.uiSchema,
+            "formData": _this.state.formData,
+            "defaultProperties": _this.state.defaultProperties
+        };
 
-        console.log("data", data);
+        console.log("data ->", data);
+        //console.log(JSON.parse(data));
 
         const fileName = 'CR_project_config';
         const exportType = 'json';
@@ -798,7 +811,7 @@ class App extends Component {
                                                         <TabPane tabId="2">
 
                                                             {!_.isEmpty(_this.state.defaultProperties, true) &&
-                                                            <div class="mt-3">
+                                                            <div className="mt-3">
                                                                 <JsonEditor
                                                                     value={_this.state.defaultProperties}
                                                                     onChange={_this.onDefaultPropertiesChange}
@@ -810,10 +823,13 @@ class App extends Component {
                                                         </TabPane>
                                                     </TabContent>
 
-                                                    <a className="btn btn-primary mt-3 mb-2"
-                                                       onClick={_this.downloadProjectConfigFile}><i
-                                                        className="fa fa-download"></i> Download Project Configuration
-                                                        File</a>
+                                                    <div className="pt-3 pb-2">
+                                                        <a className="btn btn-primary d-inline"
+                                                           onClick={_this.downloadProjectConfigFile}><i
+                                                            className="fa fa-download"></i> Download Project
+                                                            Configuration
+                                                            File</a>
+                                                    </div>
 
                                                     <hr className="mb-4"/>
 
