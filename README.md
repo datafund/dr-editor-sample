@@ -23,7 +23,7 @@ This sample application demonstrates generating, viewing, signing and storing co
 * human-readable presentation of decoded JWT with **consent-viewer** module <https://www.npmjs.com/package/@datafund/consent-viewer> 
 * ability to download JWT as file,
 * verifying JWT's validity
- 
+
 
 Installation guide
 -----------------------
@@ -49,3 +49,10 @@ The build is minified and the filenames include the hashes.<br>
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+## Example files
+
+After running the application, you can use the following files to try it out:
+
+- [Example project configuration file](./example_files/CR_project_config_demo_w_formdata_larger_w_timestamp.json)
+- [Example set of private / public RS256 keys](./example_files/private_and_public_key.txt)
