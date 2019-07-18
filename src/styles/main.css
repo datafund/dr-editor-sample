@@ -1,6 +1,7 @@
 @import url(~bootstrap/dist/css/bootstrap.min.css);
 @import url(../../node_modules/react-json-pretty/src/JSONPretty.monikai.css);
 @import url(../../node_modules/jsoneditor-react/es/editor.min.css);
+@import url(../../node_modules/react-table/react-table.css);
 @import "https://use.fontawesome.com/releases/v5.8.1/css/all.css";
 @import url(../../node_modules/lunchtype.css/Lunchtype22/Web/stylesheet.css);
 @font-face {
@@ -74,6 +75,13 @@ h1, h2, h3, h4, h5, legend {
 .disabled list-group-item {
   cursor: not-allowed !important; }
 
+.mainNav .nav-link {
+  cursor: pointer;
+  font-size: 12px; }
+  .mainNav .nav-link.active {
+    font-weight: 500;
+    border-bottom: none; }
+
 .jsonViewer {
   overflow: hidden;
   overflow-x: auto; }
@@ -81,3 +89,12 @@ h1, h2, h3, h4, h5, legend {
     padding: 8px 0px; }
   .jsonViewer table td:last-of-type {
     hyphens: auto; }
+
+.rt-tbody {
+  font-size: 12px; }
+
+.ReactTable .rt-tbody .rt-td {
+  padding-top: 15px; }
+
+.ReactTable .rt-tbody .rt-td:last-of-type {
+  padding-top: 4px; }

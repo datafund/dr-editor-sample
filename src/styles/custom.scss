@@ -66,6 +66,20 @@ h1, h2, h3, h4, h5, legend {
 }
 
 
+.mainNav {
+  .nav-link {
+    cursor: pointer;
+    font-size: 12px;
+
+    &.active {
+      font-weight: 500;
+      border-bottom: none;
+    }
+  }
+}
+
+
+
 .jsonViewer {
   overflow: hidden;
   overflow-x: auto;
@@ -80,3 +94,44 @@ h1, h2, h3, h4, h5, legend {
   }
 
 }
+
+.rt-tbody {
+  font-size: 12px;
+}
+
+.ReactTable .rt-tbody .rt-td {
+  padding-top: 15px;
+}
+
+.ReactTable .rt-tbody .rt-td:last-of-type {
+  padding-top: 4px;
+}
+
+// custom lables for form buttons
+//#root_piiControllers .btn-add:after {
+//  text-align: center;
+//  content: "\A PII Controller";
+//  white-space: pre;
+//  font-size: 11px;
+//}
+//
+//#root_services .btn-add:after {
+//  text-align: center;
+//  content: "\A Service";
+//  white-space: pre;
+//  font-size: 11px;
+//}
+//
+//#root_services_0_purposes .btn-add:after {
+//  text-align: center;
+//  content: "\A Purpose";
+//  white-space: pre;
+//  font-size: 11px;
+//}
+//
+//#root_spiCat .btn-add:after {
+//  text-align: center;
+//  content: "\A PII Category";
+//  white-space: pre;
+//  font-size: 11px;
+//}
