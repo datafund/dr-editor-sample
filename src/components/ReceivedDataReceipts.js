@@ -13,7 +13,7 @@ import {
     Button,
     ButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem, Modal, ModalHeader, ModalBody
 } from 'reactstrap'
-
+import SimpleReactValidator from 'simple-react-validator'
 import JSONPretty from "react-json-pretty";
 import _ from "lodash";
 import {ConsentViewer as ConsentViewer} from "@datafund/consent-viewer";
@@ -67,10 +67,34 @@ class ReceivedDataReceipts extends Component {
         this.toggleConsentDetailsModal = this.toggleConsentDetailsModal.bind(this);
         this.crDetailsModalGiveConsent = this.crDetailsModalGiveConsent.bind(this);
         this.crDetailsModalRevokeConsent = this.crDetailsModalRevokeConsent.bind(this);
+        this.validateForm = this.validateForm.bind(this);
+
+        this.validator = new SimpleReactValidator({});
+    }
+
+    validateForm() {
+        if (this.validator.allValid()) {
+            return true;
+
+        } else {
+            console.log(this.validator);
+            this.validator.showMessages();
+            this.forceUpdate();
+
+            return false;
+        }
     }
 
     async createAccount() {
         const _this = this;
+
+        if (!_this.validateForm()) {
+            return
+        }
+
+        _this.setState({
+            loadingInProgress: true
+        });
 
         try {
             let account = await _this.state.DataReceiptLib.createAccount(_this.state.fairdropAccountName.toLowerCase(), _this.state.fairdropAccountPassword, function (t) {
@@ -96,6 +120,14 @@ class ReceivedDataReceipts extends Component {
 
     async unlockAccount() {
         const _this = this;
+
+        if (!_this.validateForm()) {
+            return
+        }
+
+        _this.setState({
+            loadingInProgress: true
+        });
 
         try {
             let account = await _this.state.DataReceiptLib.unlockAccount(_this.state.fairdropAccountName.toLowerCase(), _this.state.fairdropAccountPassword);
@@ -133,6 +165,13 @@ class ReceivedDataReceipts extends Component {
         await this.getBalance(acc);
 
         console.log(acc);
+
+
+        await _this.getReceivedMessages();
+
+        await _this.setState({
+            loadingInProgress: false
+        });
     }
 
     async updateMultibox(account) {
@@ -441,13 +480,15 @@ class ReceivedDataReceipts extends Component {
             this.setState(({logs}) => ({logs: [...logs, Decode(log)]}))
         });
 
+        document.getElementsByClassName("mainContent")[0].classList.replace('container', 'container-fluid');
+
         //_this.unlockAccount();
         console.log("console initialized");
     }
 
     render() {
         const _this = this;
-        const loadingText = <span><i className="mdi mdi-spin mdi-loading"></i> Loading ...</span>;
+        const loadingText = <span><i className="fa fa-sync fa-spin fa-fw"></i> Loading ...</span>;
 
         return (
             <div>
@@ -481,7 +522,9 @@ class ReceivedDataReceipts extends Component {
                                                 placeholder="enter Fairdrop account name" autoComplete="username"
                                                 type="text" onChange={e => {
                                                 _this.setState({fairdropAccountName: e.target.value});
-                                            }}/></div>
+                                            }}/>
+                                                {_this.validator.message("account name", _this.state.fairdropAccountName, 'required', 'text-danger')}
+                                            </div>
 
                                             <div className="form-group"><label
                                                 htmlFor="root_version">Fairdrop account password</label><input
@@ -491,7 +534,9 @@ class ReceivedDataReceipts extends Component {
                                                 autoComplete="new-password"
                                                 type="password" onChange={e => {
                                                 _this.setState({fairdropAccountPassword: e.target.value});
-                                            }}/></div>
+                                            }}/>
+                                                {_this.validator.message("password", _this.state.fairdropAccountPassword, 'required', 'text-danger')}
+                                            </div>
 
 
                                             <ButtonDropdown className="mt-3" isOpen={this.state.walletDropdownOpen}
@@ -548,15 +593,6 @@ class ReceivedDataReceipts extends Component {
                                                         overflow: 'hidden'
                                                     }}/></label>
                                             </div>
-
-
-                                            {!_.isEmpty(_this.state.account, true) &&
-                                            <JSONPretty
-                                                className="p-2 mt-3"
-                                                json={this.state.account}
-                                                themeClassName="json-pretty"></JSONPretty>
-                                            }
-
 
                                         </div>
                                     </Collapse>

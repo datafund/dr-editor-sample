@@ -13,7 +13,7 @@ import {
     Button,
     ButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem, Modal, ModalHeader, ModalBody
 } from 'reactstrap'
-
+import SimpleReactValidator from 'simple-react-validator'
 import JSONPretty from "react-json-pretty";
 import _ from "lodash";
 import jwt from "jsonwebtoken";
@@ -23,6 +23,7 @@ import DataReceipt from "@datafund/data-receipt";
 import {Hook, Console, Decode} from 'console-feed'
 import ReactTable from "react-table";
 import {CSVLink, CSVDownload} from "react-csv";
+import Loader from "react-loader-advanced";
 
 const log = (type) => console.log.bind(console, type);
 let importWallet;
@@ -59,7 +60,9 @@ class CrStoreSendBlockchain extends Component {
             sentMessages: [],
 
             consentDetailsData: {},
-            showConsentDetailsModal: false
+            showConsentDetailsModal: false,
+
+            loadingInProgress: false
         };
 
 
@@ -85,6 +88,22 @@ class CrStoreSendBlockchain extends Component {
         this.toggleConsentDetailsModal = this.toggleConsentDetailsModal.bind(this);
         this.crDetailsModalGiveConsent = this.crDetailsModalGiveConsent.bind(this);
         this.crDetailsModalRevokeConsent = this.crDetailsModalRevokeConsent.bind(this);
+        this.validateForm = this.validateForm.bind(this);
+
+        this.validator = new SimpleReactValidator({});
+    }
+
+    validateForm() {
+        if (this.validator.allValid()) {
+            return true;
+
+        } else {
+            console.log(this.validator);
+            this.validator.showMessages();
+            this.forceUpdate();
+
+            return false;
+        }
     }
 
     onClean(obj) {
@@ -227,6 +246,14 @@ class CrStoreSendBlockchain extends Component {
     async createAccount() {
         const _this = this;
 
+        if (!_this.validateForm()) {
+            return
+        }
+
+        _this.setState({
+            loadingInProgress: true
+        });
+
         try {
             let account = await _this.state.DataReceiptLib.createAccount(_this.state.fairdropAccountName.toLowerCase(), _this.state.fairdropAccountPassword, function (t) {
                 console.error(t);
@@ -251,6 +278,15 @@ class CrStoreSendBlockchain extends Component {
 
     async unlockAccount() {
         const _this = this;
+
+        if (!_this.validateForm()) {
+            return
+        }
+
+
+        _this.setState({
+            loadingInProgress: true
+        });
 
         try {
             let account = await _this.state.DataReceiptLib.unlockAccount(_this.state.fairdropAccountName.toLowerCase(), _this.state.fairdropAccountPassword);
@@ -288,6 +324,14 @@ class CrStoreSendBlockchain extends Component {
         await this.getBalance(acc);
 
         console.log(acc);
+
+
+        await _this.getSentMessages();
+        await _this.getReceivedMessages();
+
+        await _this.setState({
+            loadingInProgress: false
+        });
     }
 
     async updateMultibox(account) {
@@ -365,6 +409,36 @@ class CrStoreSendBlockchain extends Component {
     async sendTokenToDP() {
         const _this = this;
 
+        if(!_this.state.account) {
+            alert("You need to be logged into yout account to send messages!");
+            _this.setState({
+                dataControllerAccountVisible: true
+            });
+            return
+        }
+
+        if(_this.state.jwtToken === '') {
+            alert("You need to create JWT token first!");
+            _this.setState({
+                projectConfigurationVisible: true,
+                encodeJwtVisible: true
+            });
+            return
+        }
+
+        if(_this.state.recipient === '') {
+            alert("Receiver's account name should not be empty!");
+            _this.setState({
+                sendCRVisible: true
+            });
+        }
+
+        _this.setState({
+            loadingInProgress: true
+        });
+
+        window.scrollTo(0, 0);
+
         await _this.state.DataReceiptLib.sendContents(_this.state.account, _this.state.recipient, _this.state.jwtToken,
             (output) => {
                 console.log(output)
@@ -372,10 +446,46 @@ class CrStoreSendBlockchain extends Component {
             (results) => {
                 console.log(results)
             });
+
+        await _this.setState({
+            loadingInProgress: false
+        });
+
+        await _this.getSentMessages();
     }
 
     async blockchainSignAndSendTokenToDP() {
         const _this = this;
+
+        if(!_this.state.account) {
+            alert("You need to be logged into yout account to send messages!");
+            _this.setState({
+                dataControllerAccountVisible: true
+            });
+            return
+        }
+
+        if(_this.state.jwtToken === '') {
+            alert("You need to create JWT token first!");
+            _this.setState({
+                projectConfigurationVisible: true,
+                encodeJwtVisible: true
+            });
+            return
+        }
+
+        if(_this.state.recipient === '') {
+            alert("Receiver's account name should not be empty!");
+            _this.setState({
+                sendCRVisible: true
+            });
+        }
+
+        _this.setState({
+            loadingInProgress: true
+        });
+
+        window.scrollTo(0, 0);
 
         let userAddress = _this.state.account.address;
         let subjectAddress = await _this.state.DataReceiptLib.account.getAddressOf(_this.state.recipient);
@@ -399,6 +509,12 @@ class CrStoreSendBlockchain extends Component {
         await consent.signUser();
 
         console.log("consent ", consent);
+
+        await _this.setState({
+            loadingInProgress: false
+        });
+
+        await _this.getSentMessages();
         // TODO: auto sign consent
 
     }
@@ -703,10 +819,12 @@ class CrStoreSendBlockchain extends Component {
             this.setState(({logs}) => ({logs: [...logs, Decode(log)]}))
         });
 
-        //_this.interval = setInterval(() => this.getReceivedMessages(), 2000);
+        //document.body.classList.add('signin-page');
 
-        // console.log(`Hello world!`)
-        //
+
+        document.getElementsByClassName("mainContent")[0].classList.replace('container', 'container-fluid');
+
+        //_this.interval = setInterval(() => this.getReceivedMessages(), 2000);
 
         //_this.unlockAccount();
 
@@ -715,11 +833,12 @@ class CrStoreSendBlockchain extends Component {
 
     render() {
         const _this = this;
-        const loadingText = <span><i className="mdi mdi-spin mdi-loading"></i> Loading ...</span>;
+        const loadingText = <span><i className="fa fa-sync fa-spin fa-fw"></i> Loading ...</span>;
 
         return (
             <div>
                 <div className="row mb-5">
+
 
                     <div className="col-md-4 border-right">
 
@@ -733,256 +852,266 @@ class CrStoreSendBlockchain extends Component {
                         <div className="row">
                             <div className="col-md-12">
 
-                                <ListGroupItem>
-                                    <ListGroupItemHeading className="m-0" onClick={(e) => {
-                                        _this.setState({dataControllerAccountVisible: !_this.state.dataControllerAccountVisible})
-                                    }}><i
-                                        className={_this.state.dataControllerAccountVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Data
-                                        Controller Account & wallet</ListGroupItemHeading>
-                                    <Collapse isOpen={this.state.dataControllerAccountVisible}>
-                                        <div className="mt-3 mb-3">
-
-                                            <div className="form-group"><label
-                                                htmlFor="root_version">Fairdrop account name</label><input
-                                                className="form-control" id="fairdropAccountName"
-                                                label="version" required=""
-                                                placeholder="enter Fairdrop account name" autoComplete="username"
-                                                type="text" onChange={e => {
-                                                _this.setState({fairdropAccountName: e.target.value});
-                                            }}/></div>
-
-                                            <div className="form-group"><label
-                                                htmlFor="root_version">Fairdrop account password</label><input
-                                                className="form-control" id="fairdropAccountPassword"
-                                                label="version" required=""
-                                                placeholder="enter Fairdrop account password"
-                                                autoComplete="new-password"
-                                                type="password" onChange={e => {
-                                                _this.setState({fairdropAccountPassword: e.target.value});
-                                            }}/></div>
-
-
-                                            <ButtonDropdown className="mt-3" isOpen={this.state.walletDropdownOpen}
-                                                            toggle={(e) => {
-                                                                this.setState({walletDropdownOpen: !this.state.walletDropdownOpen})
-                                                            }}>
-                                                <DropdownToggle caret color="primary">
-                                                    Wallet
-                                                </DropdownToggle>
-                                                <DropdownMenu>
-                                                    <DropdownItem onClick={(e) => this.createAccount()}><i
-                                                        className="fa fa-plus"></i> Create
-                                                        Wallet</DropdownItem>
-                                                    <DropdownItem onClick={(e) => this.unlockAccount()}><i
-                                                        className="fa fa-unlock"></i> Unlock
-                                                        Wallet</DropdownItem>
-                                                    <DropdownItem onClick={(e) => {
-                                                        // let event = new Event("click");
-                                                        // importWallet.dispatchEvent(event);
-                                                        // console.log(importWallet)
-
-                                                        //importWallet.dispatchEvent(new Event("click"));
-                                                        importWallet.click();
-
-
-                                                    }}><i className="fa fa-download"></i> Import
-                                                        Wallet</DropdownItem>
-                                                    <DropdownItem onClick={(e) => {
-                                                        // let event = new Event("click");
-                                                        // importWallet.dispatchEvent(event);
-                                                        // console.log(importWallet)
-
-                                                        //importWallet.dispatchEvent(new Event("click"));
-                                                        this.exportWallet();
-
-
-                                                    }}><i className="fa fa-upload"></i> Export
-                                                        Wallet</DropdownItem>
-                                                </DropdownMenu>
-                                            </ButtonDropdown>
-
-
-                                            <div className="mb-3 d-none">
-                                                <label className="btn btn-primary d-inline" htmlFor={"importWallet"}
-                                                       ref={(input) => {
-                                                           importWallet = input;
-                                                       }}><i
-                                                    className="fa fa-upload"></i> Import wallet
-                                                    <input id="importWallet" className="mt-4" type="file"
-                                                           accept=".json,application/json"
-                                                           onChange={_this.onImportWalletChange} style={{
-                                                        width: '0px',
-                                                        height: '0px',
-                                                        overflow: 'hidden'
-                                                    }}/></label>
-                                            </div>
-
-
-                                            {!_.isEmpty(_this.state.account, true) &&
-                                            <JSONPretty
-                                                className="p-2 mt-3"
-                                                json={this.state.account}
-                                                themeClassName="json-pretty"></JSONPretty>
-                                            }
-
-
-                                        </div>
-                                    </Collapse>
-                                </ListGroupItem>
-
-
-                                <ListGroup className="mt-3 mb-3">
+                                <Loader
+                                    show={_this.state.loadingInProgress}
+                                    contentBlur={1}
+                                    backgroundStyle={{backgroundColor: 'rgba(255,255,255,0.6)'}}
+                                    foregroundStyle={{color: '#000000'}}
+                                    message={loadingText}
+                                >
 
                                     <ListGroupItem>
                                         <ListGroupItemHeading className="m-0" onClick={(e) => {
-                                            _this.setState({projectConfigurationVisible: !_this.state.projectConfigurationVisible})
+                                            _this.setState({dataControllerAccountVisible: !_this.state.dataControllerAccountVisible})
                                         }}><i
-                                            className={_this.state.projectConfigurationVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Project
-                                            Configuration</ListGroupItemHeading>
+                                            className={_this.state.dataControllerAccountVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Data
+                                            Controller Account & wallet</ListGroupItemHeading>
+                                        <Collapse isOpen={this.state.dataControllerAccountVisible}>
+                                            <div className="mt-3 mb-3">
 
-                                        <Collapse isOpen={this.state.projectConfigurationVisible}>
+                                                <div className="form-group"><label
+                                                    htmlFor="root_version">Fairdrop account name</label><input
+                                                    className="form-control" id="fairdropAccountName"
+                                                    label="version" required=""
+                                                    placeholder="enter Fairdrop account name" autoComplete="username"
+                                                    type="text" onChange={e => {
+                                                    _this.setState({fairdropAccountName: e.target.value});
+                                                }}/>
+                                                    {_this.validator.message("account name", _this.state.fairdropAccountName, 'required', 'text-danger')}
+                                                </div>
 
-                                            <div>
+                                                <div className="form-group"><label
+                                                    htmlFor="root_version">Fairdrop account password</label><input
+                                                    className="form-control" id="fairdropAccountPassword"
+                                                    label="version" required=""
+                                                    placeholder="enter Fairdrop account password"
+                                                    autoComplete="new-password"
+                                                    type="password" onChange={e => {
+                                                    _this.setState({fairdropAccountPassword: e.target.value});
+                                                }}/>
+                                                    {_this.validator.message("password", _this.state.fairdropAccountPassword, 'required', 'text-danger')}
+                                                </div>
 
-                                                <div className="mt-3 mb-3">
-                                                    <label className="btn btn-primary d-inline" htmlFor={"file"}><i
-                                                        className="fa fa-upload"></i> Upload Project Configuration
-                                                        File <input id="file" className="mt-4" type="file"
-                                                                    accept=".json,application/json"
-                                                                    onChange={_this.onInputFileChange} style={{
+
+                                                <ButtonDropdown className="mt-3" isOpen={this.state.walletDropdownOpen}
+                                                                toggle={(e) => {
+                                                                    this.setState({walletDropdownOpen: !this.state.walletDropdownOpen})
+                                                                }}>
+                                                    <DropdownToggle caret color="primary">
+                                                        Wallet
+                                                    </DropdownToggle>
+                                                    <DropdownMenu>
+                                                        <DropdownItem onClick={(e) => this.createAccount()}><i
+                                                            className="fa fa-plus"></i> Create
+                                                            Wallet</DropdownItem>
+                                                        <DropdownItem onClick={(e) => this.unlockAccount()}><i
+                                                            className="fa fa-unlock"></i> Unlock
+                                                            Wallet</DropdownItem>
+                                                        <DropdownItem onClick={(e) => {
+                                                            // let event = new Event("click");
+                                                            // importWallet.dispatchEvent(event);
+                                                            // console.log(importWallet)
+
+                                                            //importWallet.dispatchEvent(new Event("click"));
+                                                            importWallet.click();
+
+
+                                                        }}><i className="fa fa-download"></i> Import
+                                                            Wallet</DropdownItem>
+                                                        <DropdownItem onClick={(e) => {
+                                                            // let event = new Event("click");
+                                                            // importWallet.dispatchEvent(event);
+                                                            // console.log(importWallet)
+
+                                                            //importWallet.dispatchEvent(new Event("click"));
+                                                            this.exportWallet();
+
+
+                                                        }}><i className="fa fa-upload"></i> Export
+                                                            Wallet</DropdownItem>
+                                                    </DropdownMenu>
+                                                </ButtonDropdown>
+
+
+                                                <div className="mb-3 d-none">
+                                                    <label className="btn btn-primary d-inline" htmlFor={"importWallet"}
+                                                           ref={(input) => {
+                                                               importWallet = input;
+                                                           }}><i
+                                                        className="fa fa-upload"></i> Import wallet
+                                                        <input id="importWallet" className="mt-4" type="file"
+                                                               accept=".json,application/json"
+                                                               onChange={_this.onImportWalletChange} style={{
                                                             width: '0px',
                                                             height: '0px',
                                                             overflow: 'hidden'
                                                         }}/></label>
                                                 </div>
 
-                                                {!_.isEmpty(_this.state.formData, true) &&
-                                                <JSONPretty
-                                                    className="p-2 mt-3"
-                                                    json={this.state.formData}
-                                                    themeClassName="json-pretty"></JSONPretty>
-                                                }
-
-
                                             </div>
-
                                         </Collapse>
                                     </ListGroupItem>
 
-                                </ListGroup>
 
-                                <ListGroup className="mt-3">
+                                    <ListGroup className="mt-3 mb-3">
 
-                                    <ListGroupItem>
-                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
-                                            _this.setState({encodeJwtVisible: !_this.state.encodeJwtVisible})
-                                        }}><i
-                                            className={_this.state.encodeJwtVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Encode
-                                            JWT</ListGroupItemHeading>
-                                        <Collapse isOpen={this.state.encodeJwtVisible}>
-                                            <div>
+                                        <ListGroupItem>
+                                            <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                                _this.setState({projectConfigurationVisible: !_this.state.projectConfigurationVisible})
+                                            }}><i
+                                                className={_this.state.projectConfigurationVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Project
+                                                Configuration</ListGroupItemHeading>
 
+                                            <Collapse isOpen={this.state.projectConfigurationVisible}>
 
-                                                {_.isEmpty(_this.state.formData, true) &&
-                                                <em><i className="fa fa-exclamation-triangle"></i> To Encode JWT
-                                                    Form Data must not be empty!</em>
-                                                }
-
-                                                {!_.isEmpty(_this.state.formData, true) &&
                                                 <div>
-                                                    <h5 className="mt-4">Encode</h5>
+
+                                                    <div className="mt-3 mb-3">
+                                                        <label className="btn btn-primary d-inline" htmlFor={"file"}><i
+                                                            className="fa fa-upload"></i> Upload Project Configuration
+                                                            File <input id="file" className="mt-4" type="file"
+                                                                        accept=".json,application/json"
+                                                                        onChange={_this.onInputFileChange} style={{
+                                                                width: '0px',
+                                                                height: '0px',
+                                                                overflow: 'hidden'
+                                                            }}/></label>
+                                                    </div>
+
+                                                    {!_.isEmpty(_this.state.formData, true) &&
+                                                    <JSONPretty
+                                                        className="p-2 mt-3"
+                                                        json={this.state.formData}
+                                                        themeClassName="json-pretty"></JSONPretty>
+                                                    }
+
+
+                                                </div>
+
+                                            </Collapse>
+                                        </ListGroupItem>
+
+                                    </ListGroup>
+
+                                    <ListGroup className="mt-3">
+
+                                        <ListGroupItem>
+                                            <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                                _this.setState({encodeJwtVisible: !_this.state.encodeJwtVisible})
+                                            }}><i
+                                                className={_this.state.encodeJwtVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Encode
+                                                JWT</ListGroupItemHeading>
+                                            <Collapse isOpen={this.state.encodeJwtVisible}>
+                                                <div>
+
+
+                                                    {_.isEmpty(_this.state.formData, true) &&
+                                                    <em><i className="fa fa-exclamation-triangle"></i> To Encode JWT
+                                                        Form Data must not be empty!</em>
+                                                    }
+
+                                                    {!_.isEmpty(_this.state.formData, true) &&
+                                                    <div>
+                                                        <h5 className="mt-4">Encode</h5>
+
+                                                        <div className="mt-3">
+
+                                                            <div className="form-group"><label
+                                                                htmlFor="root_version">RSA Private Key</label>
+                                                                <textarea
+                                                                    className="form-control d-block mb-3"
+                                                                    placeholder="insert private key"
+                                                                    rows={10}
+                                                                    onChange={e => {
+                                                                        _this.onPrivateKeyChange(e.target.value)
+                                                                    }}
+                                                                    defaultValue={_this.state.privateKey}></textarea>
+                                                            </div>
+
+                                                            <a className="btn btn-success text-white mt-3 mb-3"
+                                                               onClick={(e) => {
+                                                                   if (_this.state.privateKey === '') {
+                                                                       alert("Valid private key is required!");
+                                                                       return;
+                                                                   }
+                                                                   _this.generateJwtRS256()
+                                                               }}><i className="fas fa-lock"></i> Encode JWT (RS256)</a>
+
+                                                            {!_.isEmpty(_this.state.jwtToken, true) &&
+                                                            <pre
+                                                                className="p-4 mt-3 text-break bg-light">{_this.state.jwtToken}</pre>
+                                                            }
+
+                                                        </div>
+                                                    </div>
+                                                    }
+
+                                                </div>
+                                            </Collapse>
+                                        </ListGroupItem>
+
+
+                                    </ListGroup>
+
+
+                                    <ListGroup className="mt-3">
+                                        <ListGroupItem>
+                                            <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                                _this.setState({sendCRVisible: !_this.state.sendCRVisible})
+                                            }}><i
+                                                className={_this.state.sendCRVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Send
+                                                Consent Receipt JWT</ListGroupItemHeading>
+                                            <Collapse isOpen={this.state.sendCRVisible}>
+                                                <div className="mt-3 mb-3">
+
+                                                    <div className="form-group"><label
+                                                        htmlFor="root_version">Receiver's Fairdrop account
+                                                        name</label><input
+                                                        className="form-control" id="secret"
+                                                        label="version" required=""
+                                                        placeholder="enter receiver's Fairdrop account name"
+                                                        autoComplete="username"
+                                                        type="text" onChange={e => {
+                                                        _this.setState({recipient: e.target.value});
+                                                    }}/>
+                                                    </div>
 
                                                     <div className="mt-3">
-
-                                                        <div className="form-group"><label
-                                                            htmlFor="root_version">RSA Private Key</label>
-                                                            <textarea
-                                                                className="form-control d-block mb-3"
-                                                                placeholder="insert private key"
-                                                                rows={10}
-                                                                onChange={e => {
-                                                                    _this.onPrivateKeyChange(e.target.value)
-                                                                }}
-                                                                defaultValue={_this.state.privateKey}></textarea>
-                                                        </div>
-
-                                                        <a className="btn btn-success text-white mt-3 mb-3"
-                                                           onClick={(e) => {
-                                                               if (_this.state.privateKey === '') {
-                                                                   alert("Valid private key is required!");
-                                                                   return;
-                                                               }
-                                                               _this.generateJwtRS256()
-                                                           }}><i className="fas fa-lock"></i> Encode JWT (RS256)</a>
-
-                                                        {!_.isEmpty(_this.state.jwtToken, true) &&
-                                                        <pre
-                                                            className="p-4 mt-3 text-break bg-light">{_this.state.jwtToken}</pre>
-                                                        }
-
+                                                        <a className="btn btn-primary btn-block"
+                                                           onClick={_this.sendTokenToDP}> Data controller - send CR
+                                                            JWT to Data principal</a>
                                                     </div>
+
+
+                                                    <div className="row">
+                                                        <div className="col-md-12 mt-5">
+                                                            <h5>Blockchain signing</h5>
+                                                        </div>
+                                                    </div>
+
+
+                                                    <div className="row">
+                                                        <div className="col-md-12">
+                                                            <a className="btn btn-primary btn-block"
+                                                               onClick={_this.blockchainSignAndSendTokenToDP}> Data controller - Blockchain sign and
+                                                                send CR
+                                                                JWT to Data principal</a>
+                                                        </div>
+                                                    </div>
+
                                                 </div>
-                                                }
-
-                                            </div>
-                                        </Collapse>
-                                    </ListGroupItem>
+                                            </Collapse>
+                                        </ListGroupItem>
+                                    </ListGroup>
 
 
-                                </ListGroup>
 
 
-                                <ListGroup className="mt-3">
-                                    <ListGroupItem>
-                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
-                                            _this.setState({sendCRVisible: !_this.state.sendCRVisible})
-                                        }}><i
-                                            className={_this.state.sendCRVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Send
-                                            Consent Receipt JWT</ListGroupItemHeading>
-                                        <Collapse isOpen={this.state.sendCRVisible}>
-                                            <div className="mt-3 mb-3">
 
-                                                <div className="form-group"><label
-                                                    htmlFor="root_version">Receiver's Fairdrop account
-                                                    name</label><input
-                                                    className="form-control" id="secret"
-                                                    label="version" required=""
-                                                    placeholder="enter receiver's Fairdrop account name"
-                                                    autoComplete="username"
-                                                    type="text" onChange={e => {
-                                                    _this.setState({recipient: e.target.value});
-                                                }}/></div>
-
-                                                <div className="mt-3">
-                                                    <a className="btn btn-primary btn-block"
-                                                       onClick={_this.sendTokenToDP}> Data controller - send CR
-                                                        JWT to Data principal</a>
-                                                </div>
-
-                                            </div>
-                                        </Collapse>
-                                    </ListGroupItem>
-                                </ListGroup>
-
-
+                                </Loader>
                             </div>
                         </div>
 
-                        <div className="row">
-                            <div className="col-md-12 mt-5">
-                                <h5>Blockchain signing</h5>
-                            </div>
-                        </div>
-
-
-                        <div className="row">
-                            <div className="col-md-12">
-                                <a className="btn btn-primary btn-block"
-                                   onClick={_this.blockchainSignAndSendTokenToDP}> Data controller - Blockchain sign and
-                                    send CR
-                                    JWT to Data principal</a>
-                            </div>
-                        </div>
 
 
                     </div>
@@ -992,14 +1121,14 @@ class CrStoreSendBlockchain extends Component {
                         <ListGroup className="mt-3 mb-3">
                             <div className="row">
                                 <div className="col-md-12">
-                            <ListGroupItem>
-                                <ListGroupItemHeading className="m-0" onClick={(e) => {
-                                    _this.setState({consoleVisible: !_this.state.consoleVisible})
-                                }}><i
-                                    className={_this.state.consoleVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Console
-                                </ListGroupItemHeading>
+                                    <ListGroupItem>
+                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                            _this.setState({consoleVisible: !_this.state.consoleVisible})
+                                        }}><i
+                                            className={_this.state.consoleVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Console
+                                        </ListGroupItemHeading>
 
-                                <Collapse isOpen={this.state.consoleVisible}>
+                                        <Collapse isOpen={this.state.consoleVisible}>
 
 
                                             <ul style={{
@@ -1015,9 +1144,9 @@ class CrStoreSendBlockchain extends Component {
                                             </ul>
 
 
-                                </Collapse>
+                                        </Collapse>
 
-                            </ListGroupItem>
+                                    </ListGroupItem>
                                 </div>
                             </div>
                         </ListGroup>
@@ -1025,8 +1154,10 @@ class CrStoreSendBlockchain extends Component {
 
                         <div className="row">
                             <div className="col-md-12 mt-5">
-                                <h4 style={{cursor: 'pointer'}} className="d-inline" onClick={(e) => _this.getSentMessages()}>
-                                    <i className={this.state.receivingSent ? 'fa fa-sync fa-spin fa-fw' : 'fa fa-sync'}></i> Data controller
+                                <h4 style={{cursor: 'pointer'}} className="d-inline"
+                                    onClick={(e) => _this.getSentMessages()}>
+                                    <i className={this.state.receivingSent ? 'fa fa-sync fa-spin fa-fw' : 'fa fa-sync'}></i> Data
+                                    controller
                                     sent Data Receipts</h4>
                                 <CSVLink
                                     filename={"received_data_receipts.csv"}
@@ -1120,9 +1251,15 @@ class CrStoreSendBlockchain extends Component {
                                                     Header: "Reference",
                                                     accessor: "consentStatus",
                                                     Cell: row => {
+                                                        let value = (row.value && row.value.updated) ? row.value.updated : 'n/a';
+
+                                                        if(value === '0x0000000000000000000000000000000000000000') {
+                                                            value = '';
+                                                        }
+
                                                         return (
                                                             <div>
-                                                                {(row.value && row.value.updated) ? row.value.updated : 'n/a'}
+                                                                {value}
                                                             </div>
                                                         )
                                                     }
@@ -1133,11 +1270,12 @@ class CrStoreSendBlockchain extends Component {
 
                                                         return (
                                                             <div className="text-center">
-                                                                <a className="btn btn-primary btn-sm pt-1 pb-1" onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-                                                                    _this.showConsentDetails(row.original, 'sent')
-                                                                }}>View</a>
+                                                                <a className="btn btn-primary btn-sm pt-1 pb-1"
+                                                                   onClick={(e) => {
+                                                                       e.preventDefault();
+                                                                       e.stopPropagation();
+                                                                       _this.showConsentDetails(row.original, 'sent')
+                                                                   }}>View</a>
                                                             </div>
                                                         )
                                                     }
@@ -1166,8 +1304,10 @@ class CrStoreSendBlockchain extends Component {
 
                         <div className="row">
                             <div className="col-md-12 mt-5">
-                                <h4 style={{cursor: 'pointer'}} className="d-inline" onClick={(e) => _this.getReceivedMessages()}>
-                                    <i className={this.state.receiving ? 'fa fa-sync fa-spin fa-fw' : 'fa fa-sync'}></i> Data controller
+                                <h4 style={{cursor: 'pointer'}} className="d-inline"
+                                    onClick={(e) => _this.getReceivedMessages()}>
+                                    <i className={this.state.receiving ? 'fa fa-sync fa-spin fa-fw' : 'fa fa-sync'}></i> Data
+                                    controller
                                     received Data Receipts</h4>
                                 <CSVLink
                                     filename={"sent_data_receipts.csv"}
@@ -1273,11 +1413,12 @@ class CrStoreSendBlockchain extends Component {
 
                                                         return (
                                                             <div className="text-center">
-                                                                <a className="btn btn-primary btn-sm pt-1 pb-1" onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-                                                                    _this.showConsentDetails(row.original, 'received')
-                                                                }}>View</a>
+                                                                <a className="btn btn-primary btn-sm pt-1 pb-1"
+                                                                   onClick={(e) => {
+                                                                       e.preventDefault();
+                                                                       e.stopPropagation();
+                                                                       _this.showConsentDetails(row.original, 'received')
+                                                                   }}>View</a>
                                                             </div>
                                                         )
                                                     }
@@ -1311,7 +1452,7 @@ class CrStoreSendBlockchain extends Component {
                 </div>
 
 
-                <Modal isOpen={_this.state.showConsentDetailsModal} toggle={_this.toggleConsentDetailsModal}
+                <Modal size="xl" isOpen={_this.state.showConsentDetailsModal} toggle={_this.toggleConsentDetailsModal}
                        backdrop="static">
                     <ModalHeader toggle={_this.toggleConsentDetailsModal}>Consent Receipt Details
                         {/*<div className="downloadCsv mt-3"><CSVLink className={"pull-right"} data={_this.state.csvData} filename={_this.state.csvFileName}><i className="mdi mdi-file-document-outline"></i> Download CSV</CSVLink></div>*/}
@@ -1330,14 +1471,19 @@ class CrStoreSendBlockchain extends Component {
                                 <div className="row">
                                     {_this.state.typeOfMessageInModal === 'received' &&
                                     <div className="col-md-7 mb-3">
-                                        <a className="btn btn-primary" onClick={_this.crDetailsModalGiveConsent}>Give Consent and Sign on <i
-                                            className="fa fa-link"></i></a>
-                                        <a className="btn btn-primary mt-2" onClick={_this.crDetailsModalRevokeConsent}>Revoke Consent</a>
+                                        <a className="btn btn-primary" onClick={_this.crDetailsModalGiveConsent}>Give
+                                            Consent and Sign on <i
+                                                className="fa fa-link"></i></a>
+                                        <a className="btn btn-primary mt-2" onClick={_this.crDetailsModalRevokeConsent}>Revoke
+                                            Consent</a>
                                     </div>
                                     }
                                     <div className="col-md-4 mb-2">
-                                        <div>Token: <b>{_.isEmpty(_this.state.consentDetailsData.decodedToken, true) ? 'INVALID': 'VALID'}</b></div>
-                                        <div className="mt-4">Signature: <b>{_.isEmpty(_this.state.consentDetailsData.verified, true) ? 'INVALID': 'VALID'}</b></div>
+                                        <div>Token: <b>{_.isEmpty(_this.state.consentDetailsData.decodedToken, true) ? 'INVALID' : 'VALID'}</b>
+                                        </div>
+                                        <div
+                                            className="mt-4">Signature: <b>{_.isEmpty(_this.state.consentDetailsData.verified, true) ? 'INVALID' : 'VALID'}</b>
+                                        </div>
                                     </div>
                                 </div>
 

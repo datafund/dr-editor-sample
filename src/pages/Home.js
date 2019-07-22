@@ -102,7 +102,7 @@ class App extends Component {
                                             this.setState({activeMainTab: '2'});
                                         }}>
 
-                                        Consent Receipt Storage & Sending & Blockchain signing (data user)
+                                        Consent Receipt Storage & Sending & Blockchain signing (data controller / user)
                                     </NavLink>
                                 </NavItem>
                                 <NavItem>
@@ -112,7 +112,7 @@ class App extends Component {
                                             this.setState({activeMainTab: '3'});
                                         }}>
 
-                                        Received Data Receipts (normal user)
+                                        Received Data Receipts (data principal / giver)
                                     </NavLink>
                                 </NavItem>
                             </Nav>
