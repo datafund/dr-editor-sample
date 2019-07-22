@@ -24,6 +24,8 @@ import {Hook, Console, Decode} from 'console-feed'
 import ReactTable from "react-table";
 import {CSVLink, CSVDownload} from "react-csv";
 import Loader from "react-loader-advanced";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const log = (type) => console.log.bind(console, type);
 let importWallet;
@@ -62,7 +64,8 @@ class CrStoreSendBlockchain extends Component {
             consentDetailsData: {},
             showConsentDetailsModal: false,
 
-            loadingInProgress: false
+            loadingInProgress: false,
+            loadingInModalInProgress: false
         };
 
 
@@ -139,6 +142,8 @@ class CrStoreSendBlockchain extends Component {
 
         let jwtToken = jwt.sign(_this.state.cleanFormData, _this.state.privateKey, config.defaultProperties.tokenSigningOptions);
 
+        console.log(jwtToken);
+
         _this.setState({
             jwtToken: jwtToken,
             jwtTokenEncodedVisible: true,
@@ -160,9 +165,11 @@ class CrStoreSendBlockchain extends Component {
             _this.setState({
                 signature: legit
             });
-            alert("Signature VALID!");
+            console.log("Signature VALID!");
+            return true
         } catch (e) {
-            alert("Invalid signature!");
+            console.log("Invalid signature!");
+            return false
         }
 
     }
@@ -265,6 +272,7 @@ class CrStoreSendBlockchain extends Component {
                 // console.info("-----> account created: ");
                 // console.info(account);
                 // console.log("------------ \n\n");
+                toast.success("Account created!");
 
                 _this.setAccount(account);
             }
@@ -296,11 +304,12 @@ class CrStoreSendBlockchain extends Component {
                 // console.info(account);
                 // console.log("------------ \n\n");
 
-                _this.setAccount(account);
+                toast.success("Account unlocked!");
 
                 CM = await _this.state.DataReceiptLib.getConsentManager();
                 console.log(CM);
 
+                await _this.setAccount(account);
             }
 
         } catch (err) {
@@ -425,6 +434,12 @@ class CrStoreSendBlockchain extends Component {
             });
             return
         }
+        // } else {
+        //     if(!_this.verifyJwtRS256()) {
+        //         alert("JWT token signature invalid!");
+        //         return
+        //     }
+        // }
 
         if(_this.state.recipient === '') {
             alert("Receiver's account name should not be empty!");
@@ -451,6 +466,8 @@ class CrStoreSendBlockchain extends Component {
             loadingInProgress: false
         });
 
+        await toast.success("Token sent!");
+
         await _this.getSentMessages();
     }
 
@@ -473,6 +490,12 @@ class CrStoreSendBlockchain extends Component {
             });
             return
         }
+        // } else {
+        //     if(!_this.verifyJwtRS256()) {
+        //         alert("JWT token signature invalid!");
+        //         return
+        //     }
+        // }
 
         if(_this.state.recipient === '') {
             alert("Receiver's account name should not be empty!");
@@ -513,6 +536,8 @@ class CrStoreSendBlockchain extends Component {
         await _this.setState({
             loadingInProgress: false
         });
+
+        await toast.success("Token sent & transaction finished!");
 
         await _this.getSentMessages();
         // TODO: auto sign consent
@@ -793,8 +818,35 @@ class CrStoreSendBlockchain extends Component {
         }
 
         let ss = await consent.isSubjectSigned();
-        console.log("ss ", ss);
-        await consent.signSubject();
+
+
+        if(consent) {
+            _this.setState({
+                loadingInModalInProgress: true
+            });
+
+            try{
+                await consent.signSubject();
+                await _this.setState({
+                    loadingInModalInProgress: false
+                });
+
+                await toast.success("Consent given and signed on blockchain!");
+                await _this.getReceivedMessages();
+
+            } catch(e) {
+                //alert("Error: " + e);
+                _this.setState({
+                    loadingInModalInProgress: false
+                });
+
+                console.error(e);
+                await toast.error("Error: " + e);
+            }
+
+
+
+        }
     }
 
     async crDetailsModalRevokeConsent() {
@@ -807,8 +859,30 @@ class CrStoreSendBlockchain extends Component {
             consent = await _this.state.DataReceiptLib.getConsent(consents[consents.length - 1]);
         }
 
-        await consent.revokeConsent();
+        if(consent) {
+            _this.setState({
+                loadingInModalInProgress: true
+            });
 
+            try {
+                await consent.revokeConsent();
+                await _this.getReceivedMessages();
+
+                await _this.setState({
+                    loadingInModalInProgress: false
+                });
+
+                await toast.success("Consent revoked!");
+            } catch(e) {
+                await _this.setState({
+                    loadingInModalInProgress: false
+                });
+
+                console.error(e);
+                await toast.error("Consent could not be revoked!");
+            }
+
+        }
     }
 
     componentDidMount() {
@@ -1459,6 +1533,14 @@ class CrStoreSendBlockchain extends Component {
                     </ModalHeader>
                     <ModalBody>
 
+                        <Loader
+                            show={_this.state.loadingInModalInProgress}
+                            contentBlur={1}
+                            backgroundStyle={{backgroundColor: 'rgba(255,255,255,0.6)'}}
+                            foregroundStyle={{color: '#000000'}}
+                            message={loadingText}
+                        >
+
 
                         <div className="row">
                             <div className="col-md-12 mb-3">
@@ -1501,10 +1583,12 @@ class CrStoreSendBlockchain extends Component {
                             </div>
                         </div>
 
+                        </Loader>
+
                     </ModalBody>
                 </Modal>
 
-
+                <ToastContainer />
             </div>
 
 
