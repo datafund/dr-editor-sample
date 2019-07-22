@@ -21,6 +21,9 @@ import DataReceipt from "@datafund/data-receipt";
 import {Hook, Console, Decode} from 'console-feed'
 import ReactTable from "react-table";
 import {CSVLink, CSVDownload} from "react-csv";
+import Loader from "react-loader-advanced";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const log = (type) => console.log.bind(console, type);
 let importWallet;
@@ -51,13 +54,14 @@ class ReceivedDataReceipts extends Component {
             sentMessages: [],
 
             consentDetailsData: {},
-            showConsentDetailsModal: false
+            showConsentDetailsModal: false,
+
+            loadingInProgress: false,
+            loadingInModalInProgress: false
         };
 
         this.importAccount = this.importAccount.bind(this);
         this.createAccount = this.createAccount.bind(this);
-        this.sendTokenToDP = this.sendTokenToDP.bind(this);
-        this.blockchainSignAndSendTokenToDP = this.blockchainSignAndSendTokenToDP.bind(this);
         this.exportWallet = this.exportWallet.bind(this);
         this.getReceivedMessages = this.getReceivedMessages.bind(this);
         this.addReceived = this.addReceived.bind(this);
@@ -107,6 +111,7 @@ class ReceivedDataReceipts extends Component {
                 // console.info("-----> account created: ");
                 // console.info(account);
                 // console.log("------------ \n\n");
+                toast.success("Account created!");
 
                 _this.setAccount(account);
             }
@@ -136,6 +141,8 @@ class ReceivedDataReceipts extends Component {
                 // console.info("-----> account unlocked: ");
                 // console.info(account);
                 // console.log("------------ \n\n");
+
+                toast.success("Account unlocked!");
 
                 _this.setAccount(account);
 
@@ -218,47 +225,6 @@ class ReceivedDataReceipts extends Component {
         console.log(_this.state.account);
 
         _this.state.account.saveBackupAs();
-    }
-
-    async sendTokenToDP() {
-        const _this = this;
-
-        await _this.state.DataReceiptLib.sendContents(_this.state.account, _this.state.recipient, _this.state.jwtToken,
-            (output) => {
-                console.log(output)
-            },
-            (results) => {
-                console.log(results)
-            });
-    }
-
-    async blockchainSignAndSendTokenToDP() {
-        const _this = this;
-
-        let userAddress = _this.state.account.address;
-        let subjectAddress = await _this.state.DataReceiptLib.account.getAddressOf(_this.state.recipient);
-        let swarmHash = await _this.state.DataReceiptLib.sendDataReceipt(_this.state.jwtToken, _this.state.recipient, (error) => {
-                console.error(error)
-            },
-            (results) => {
-                console.log(results)
-            });
-
-        console.log("User   :" + userAddress);
-        console.log("Subject:" + subjectAddress);
-
-        let tx = await CM.createConsent(userAddress, subjectAddress, "0x" + swarmHash);
-        console.log("transaction finished", tx); // transaction finished
-
-        let cf = await CM.getConsentsFor("0x" + swarmHash);
-        console.log("cf ", cf);
-        let consent = await _this.state.DataReceiptLib.getConsent(cf[cf.length - 1]);
-
-        await consent.signUser();
-
-        console.log("consent ", consent);
-        // TODO: auto sign consent
-
     }
 
 
@@ -475,14 +441,12 @@ class ReceivedDataReceipts extends Component {
     componentDidMount() {
         const _this = this;
 
-
         Hook(window.console, log => {
             this.setState(({logs}) => ({logs: [...logs, Decode(log)]}))
         });
 
         document.getElementsByClassName("mainContent")[0].classList.replace('container', 'container-fluid');
 
-        //_this.unlockAccount();
         console.log("console initialized");
     }
 
@@ -786,13 +750,21 @@ class ReceivedDataReceipts extends Component {
                 </div>
 
 
-                <Modal isOpen={_this.state.showConsentDetailsModal} toggle={_this.toggleConsentDetailsModal}
+                <Modal size="xl" isOpen={_this.state.showConsentDetailsModal} toggle={_this.toggleConsentDetailsModal}
                        backdrop="static">
                     <ModalHeader toggle={_this.toggleConsentDetailsModal}>Consent Receipt Details
                         {/*<div className="downloadCsv mt-3"><CSVLink className={"pull-right"} data={_this.state.csvData} filename={_this.state.csvFileName}><i className="mdi mdi-file-document-outline"></i> Download CSV</CSVLink></div>*/}
                     </ModalHeader>
                     <ModalBody>
 
+
+                        <Loader
+                            show={_this.state.loadingInModalInProgress}
+                            contentBlur={1}
+                            backgroundStyle={{backgroundColor: 'rgba(255,255,255,0.6)'}}
+                            foregroundStyle={{color: '#000000'}}
+                            message={loadingText}
+                        >
 
                         <div className="row">
                             <div className="col-md-12 mb-3">
@@ -829,6 +801,8 @@ class ReceivedDataReceipts extends Component {
                                 </div>
                             </div>
                         </div>
+
+                        </Loader>
 
                     </ModalBody>
                 </Modal>

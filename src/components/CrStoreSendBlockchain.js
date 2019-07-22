@@ -893,14 +893,7 @@ class CrStoreSendBlockchain extends Component {
             this.setState(({logs}) => ({logs: [...logs, Decode(log)]}))
         });
 
-        //document.body.classList.add('signin-page');
-
-
         document.getElementsByClassName("mainContent")[0].classList.replace('container', 'container-fluid');
-
-        //_this.interval = setInterval(() => this.getReceivedMessages(), 2000);
-
-        //_this.unlockAccount();
 
         console.log("console initialized");
     }
