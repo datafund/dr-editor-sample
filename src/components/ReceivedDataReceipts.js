@@ -24,6 +24,7 @@ import {CSVLink, CSVDownload} from "react-csv";
 import Loader from "react-loader-advanced";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import QRCode from "qrcode.react";
 
 const log = (type) => console.log.bind(console, type);
 let importWallet;
@@ -113,7 +114,7 @@ class ReceivedDataReceipts extends Component {
                 // console.log("------------ \n\n");
                 toast.success("Account created!");
 
-                _this.setAccount(account);
+                _this.unlockAccount();
             }
 
         } catch (err) {
@@ -198,10 +199,14 @@ class ReceivedDataReceipts extends Component {
     }
 
     async getBalance(account) {
+        const _this = this;
         let b = await account.getBalance();
 
         console.log("balance: ", b);
-        //DataReceipt.prototype.setBalance(account.Tx.web3.utils.fromWei(b, 'ether'));
+
+        _this.setState({
+            balance: account.Tx.web3.utils.fromWei(b, 'ether')
+        });
     }
 
     async importAccount(result, filename) {
@@ -445,7 +450,7 @@ class ReceivedDataReceipts extends Component {
             this.setState(({logs}) => ({logs: [...logs, Decode(log)]}))
         });
 
-        document.getElementsByClassName("mainContent")[0].classList.replace('container', 'container-fluid');
+        //document.getElementsByClassName("mainContent")[0].classList.replace('container', 'container-fluid');
 
         console.log("console initialized");
     }
@@ -543,7 +548,7 @@ class ReceivedDataReceipts extends Component {
                                             </ButtonDropdown>
 
 
-                                            <div className="mb-3 d-none">
+                                            <div className="d-none">
                                                 <label className="btn btn-primary d-inline" htmlFor={"importWallet"}
                                                        ref={(input) => {
                                                            importWallet = input;
@@ -557,6 +562,18 @@ class ReceivedDataReceipts extends Component {
                                                         overflow: 'hidden'
                                                     }}/></label>
                                             </div>
+
+                                            {_this.state.account &&
+                                            <div className="mt-3 mb-3 card">
+
+                                                <div className="card-body p-4 pb-1">
+                                                    <p>Account Name: <b>{_this.state.account.subdomain}</b></p>
+                                                    <p>Balance: <b>{_this.state.balance ? _this.state.balance : '0'} D3X</b></p>
+                                                    <p>Address: <b>{_this.state.account.address} </b></p>
+                                                    <p><QRCode value={_this.state.account.address}/></p>
+                                                </div>
+                                            </div>
+                                            }
 
                                         </div>
                                     </Collapse>

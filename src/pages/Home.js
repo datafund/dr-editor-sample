@@ -10,7 +10,7 @@ import {
     Navbar,
     NavItem,
     Nav,
-    NavLink
+    NavLink, ButtonGroup, Button
 } from 'reactstrap'
 
 import {Link} from 'react-router-dom'
@@ -30,7 +30,7 @@ window.FDS = new FDS({
     ethGateway: 'https://geth-noordung.fairdatasociety.org',
     faucetAddress: 'https://dfaucet-testnet-prod.herokuapp.com/gimmie',
     httpTimeout: 1000,
-    gasPrice: 0.1,
+    gasPrice: 1,
     ensConfig: {
         domain: 'datafund.eth',
         registryAddress: '0xc11f4427a0261e5ca508c982e747851e29c48e83',
@@ -68,7 +68,7 @@ class App extends Component {
             <div>
 
                 <Navbar color="faded" className="" light expand="lg">
-                    <div className="container">
+                    <div className="container-fluid">
 
                         <Link className="navbar-brand" to="/"><img src={logo} alt={logo}
                                                                    className="img-fluid"/></Link>
@@ -80,42 +80,54 @@ class App extends Component {
                     </div>
                 </Navbar>
 
-                <div className="container mainContent">
+                <div className="container-fluid mainContent">
 
                     <div className="row">
                         <div className="col-md-12">
 
-                            <Nav tabs className="mt-1 mb-4 mainNav">
-                                <NavItem>
-                                    <NavLink
-                                        className={classnames({active: this.state.activeMainTab === '1'})}
-                                        onClick={() => {
-                                            this.setState({activeMainTab: '1'});
-                                        }}>
-                                        Consent Receipt Editor & Viewer
-                                    </NavLink>
-                                </NavItem>
-                                <NavItem>
-                                    <NavLink
-                                        className={classnames({active: this.state.activeMainTab === '2'})}
-                                        onClick={() => {
-                                            this.setState({activeMainTab: '2'});
-                                        }}>
+                            <ButtonGroup className="mb-4">
+                                <Button active={this.state.activeMainTab === '1'} onClick={() => {
+                                    this.setState({activeMainTab: '1'});
+                                }}>Consent Receipt Editor &<br/> Viewer</Button>
+                                <Button active={this.state.activeMainTab === '2'} onClick={() => {
+                                    this.setState({activeMainTab: '2'});
+                                }}>Consent Receipt Storage & Sending &<br/> Blockchain signing (data controller / user)</Button>
+                                <Button active={this.state.activeMainTab === '3'} onClick={() => {
+                                    this.setState({activeMainTab: '3'});
+                                }}>Received Data Receipts<br/> (data principal / giver)</Button>
+                            </ButtonGroup>
 
-                                        Consent Receipt Storage & Sending & Blockchain signing (data controller / user)
-                                    </NavLink>
-                                </NavItem>
-                                <NavItem>
-                                    <NavLink
-                                        className={classnames({active: this.state.activeMainTab === '3'})}
-                                        onClick={() => {
-                                            this.setState({activeMainTab: '3'});
-                                        }}>
+                            {/*<Nav tabs className="mt-1 mb-4 mainNav">*/}
+                            {/*    <NavItem>*/}
+                            {/*        <NavLink*/}
+                            {/*            className={classnames({active: this.state.activeMainTab === '1'})}*/}
+                            {/*            onClick={() => {*/}
+                            {/*                this.setState({activeMainTab: '1'});*/}
+                            {/*            }}>*/}
+                            {/*            Consent Receipt Editor & Viewer*/}
+                            {/*        </NavLink>*/}
+                            {/*    </NavItem>*/}
+                            {/*    <NavItem>*/}
+                            {/*        <NavLink*/}
+                            {/*            className={classnames({active: this.state.activeMainTab === '2'})}*/}
+                            {/*            onClick={() => {*/}
+                            {/*                this.setState({activeMainTab: '2'});*/}
+                            {/*            }}>*/}
 
-                                        Received Data Receipts (data principal / giver)
-                                    </NavLink>
-                                </NavItem>
-                            </Nav>
+                            {/*            Consent Receipt Storage & Sending & Blockchain signing (data controller / user)*/}
+                            {/*        </NavLink>*/}
+                            {/*    </NavItem>*/}
+                            {/*    <NavItem>*/}
+                            {/*        <NavLink*/}
+                            {/*            className={classnames({active: this.state.activeMainTab === '3'})}*/}
+                            {/*            onClick={() => {*/}
+                            {/*                this.setState({activeMainTab: '3'});*/}
+                            {/*            }}>*/}
+
+                            {/*            Received Data Receipts (data principal / giver)*/}
+                            {/*        </NavLink>*/}
+                            {/*    </NavItem>*/}
+                            {/*</Nav>*/}
 
 
                         </div>

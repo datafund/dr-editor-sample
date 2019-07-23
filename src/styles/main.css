@@ -77,10 +77,14 @@ h1, h2, h3, h4, h5, legend {
 
 .mainNav .nav-link {
   cursor: pointer;
-  font-size: 12px; }
+  font-size: 13px; }
   .mainNav .nav-link.active {
     font-weight: 500;
     border-bottom: none; }
+
+a.btn.disabled, fieldset:disabled a.btn,
+.btn.disabled {
+  cursor: not-allowed !important; }
 
 .jsonViewer {
   overflow: hidden;

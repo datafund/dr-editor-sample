@@ -24,7 +24,8 @@ import {Hook, Console, Decode} from 'console-feed'
 import ReactTable from "react-table";
 import {CSVLink, CSVDownload} from "react-csv";
 import Loader from "react-loader-advanced";
-import { ToastContainer, toast } from 'react-toastify';
+import QRCode from 'qrcode.react';
+import {ToastContainer, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const log = (type) => console.log.bind(console, type);
@@ -44,6 +45,7 @@ class CrStoreSendBlockchain extends Component {
             account: null,
             consentManager: null,
             recipient: '',
+            recipientAccountValid: false,
 
             fairdropAccountName: '',
             fairdropAccountPassword: '',
@@ -274,7 +276,7 @@ class CrStoreSendBlockchain extends Component {
                 // console.log("------------ \n\n");
                 toast.success("Account created!");
 
-                _this.setAccount(account);
+                _this.unlockAccount();
             }
 
         } catch (err) {
@@ -332,7 +334,7 @@ class CrStoreSendBlockchain extends Component {
         await this.checkApllicationDomain(acc);
         await this.getBalance(acc);
 
-        console.log(acc);
+        console.log('account: ', acc);
 
 
         await _this.getSentMessages();
@@ -360,10 +362,16 @@ class CrStoreSendBlockchain extends Component {
     }
 
     async getBalance(account) {
+        const _this = this;
+
         let b = await account.getBalance();
 
         console.log("balance: ", b);
-        //DataReceipt.prototype.setBalance(account.Tx.web3.utils.fromWei(b, 'ether'));
+
+        console.log(account.Tx.web3.utils.fromWei(b, 'ether'));
+        _this.setState({
+            balance: account.Tx.web3.utils.fromWei(b, 'ether')
+        });
     }
 
     async importAccount(result, filename) {
@@ -379,6 +387,23 @@ class CrStoreSendBlockchain extends Component {
             console.error(err);
         }
 
+    }
+
+    async checkContact() {
+        const _this = this;
+
+        try {
+            await _this.state.account.lookupContact(_this.state.recipient, console.log, console.log, console.log);
+            console.log("address:" + await _this.state.account.getAddressOf(_this.state.recipient));
+            _this.setState({
+                recipientAccountValid: true
+            });
+        } catch (err) {
+            console.error(`>>>>>>> ${err}`, err);
+            _this.setState({
+                recipientAccountValid: false
+            });
+        }
     }
 
     exportWallet() {
@@ -418,7 +443,7 @@ class CrStoreSendBlockchain extends Component {
     async sendTokenToDP() {
         const _this = this;
 
-        if(!_this.state.account) {
+        if (!_this.state.account) {
             alert("You need to be logged into yout account to send messages!");
             _this.setState({
                 dataControllerAccountVisible: true
@@ -426,7 +451,7 @@ class CrStoreSendBlockchain extends Component {
             return
         }
 
-        if(_this.state.jwtToken === '') {
+        if (_this.state.jwtToken === '') {
             alert("You need to create JWT token first!");
             _this.setState({
                 projectConfigurationVisible: true,
@@ -441,11 +466,17 @@ class CrStoreSendBlockchain extends Component {
         //     }
         // }
 
-        if(_this.state.recipient === '') {
+        if (_this.state.recipient === '') {
             alert("Receiver's account name should not be empty!");
             _this.setState({
                 sendCRVisible: true
             });
+            return
+        }
+
+        if(!_this.state.recipientAccountValid) {
+            alert("Receiver's account is not valid!");
+            return
         }
 
         _this.setState({
@@ -474,7 +505,9 @@ class CrStoreSendBlockchain extends Component {
     async blockchainSignAndSendTokenToDP() {
         const _this = this;
 
-        if(!_this.state.account) {
+
+
+        if (!_this.state.account) {
             alert("You need to be logged into yout account to send messages!");
             _this.setState({
                 dataControllerAccountVisible: true
@@ -482,7 +515,7 @@ class CrStoreSendBlockchain extends Component {
             return
         }
 
-        if(_this.state.jwtToken === '') {
+        if (_this.state.jwtToken === '') {
             alert("You need to create JWT token first!");
             _this.setState({
                 projectConfigurationVisible: true,
@@ -497,11 +530,17 @@ class CrStoreSendBlockchain extends Component {
         //     }
         // }
 
-        if(_this.state.recipient === '') {
+        if (_this.state.recipient === '') {
             alert("Receiver's account name should not be empty!");
             _this.setState({
                 sendCRVisible: true
             });
+            return
+        }
+
+        if(!_this.state.recipientAccountValid) {
+            alert("Receiver's account is not valid!");
+            return
         }
 
         _this.setState({
@@ -820,12 +859,12 @@ class CrStoreSendBlockchain extends Component {
         let ss = await consent.isSubjectSigned();
 
 
-        if(consent) {
+        if (consent) {
             _this.setState({
                 loadingInModalInProgress: true
             });
 
-            try{
+            try {
                 await consent.signSubject();
                 await _this.setState({
                     loadingInModalInProgress: false
@@ -834,7 +873,7 @@ class CrStoreSendBlockchain extends Component {
                 await toast.success("Consent given and signed on blockchain!");
                 await _this.getReceivedMessages();
 
-            } catch(e) {
+            } catch (e) {
                 //alert("Error: " + e);
                 _this.setState({
                     loadingInModalInProgress: false
@@ -843,7 +882,6 @@ class CrStoreSendBlockchain extends Component {
                 console.error(e);
                 await toast.error("Error: " + e);
             }
-
 
 
         }
@@ -859,7 +897,7 @@ class CrStoreSendBlockchain extends Component {
             consent = await _this.state.DataReceiptLib.getConsent(consents[consents.length - 1]);
         }
 
-        if(consent) {
+        if (consent) {
             _this.setState({
                 loadingInModalInProgress: true
             });
@@ -873,7 +911,7 @@ class CrStoreSendBlockchain extends Component {
                 });
 
                 await toast.success("Consent revoked!");
-            } catch(e) {
+            } catch (e) {
                 await _this.setState({
                     loadingInModalInProgress: false
                 });
@@ -893,7 +931,7 @@ class CrStoreSendBlockchain extends Component {
             this.setState(({logs}) => ({logs: [...logs, Decode(log)]}))
         });
 
-        document.getElementsByClassName("mainContent")[0].classList.replace('container', 'container-fluid');
+        //document.getElementsByClassName("mainContent")[0].classList.replace('container', 'container-fluid');
 
         console.log("console initialized");
     }
@@ -1000,7 +1038,7 @@ class CrStoreSendBlockchain extends Component {
                                                 </ButtonDropdown>
 
 
-                                                <div className="mb-3 d-none">
+                                                <div className="d-none">
                                                     <label className="btn btn-primary d-inline" htmlFor={"importWallet"}
                                                            ref={(input) => {
                                                                importWallet = input;
@@ -1014,6 +1052,18 @@ class CrStoreSendBlockchain extends Component {
                                                             overflow: 'hidden'
                                                         }}/></label>
                                                 </div>
+
+                                                {_this.state.account &&
+                                                <div className="mt-3 mb-3 card">
+
+                                                    <div className="card-body p-4 pb-1">
+                                                        <p>Account Name: <b>{_this.state.account.subdomain}</b></p>
+                                                        <p>Balance: <b>{_this.state.balance ? _this.state.balance : '0'} D3X</b></p>
+                                                        <p>Address: <b>{_this.state.account.address} </b></p>
+                                                        <p><QRCode value={_this.state.account.address}/></p>
+                                                    </div>
+                                                </div>
+                                                }
 
                                             </div>
                                         </Collapse>
@@ -1139,12 +1189,15 @@ class CrStoreSendBlockchain extends Component {
                                                         placeholder="enter receiver's Fairdrop account name"
                                                         autoComplete="username"
                                                         type="text" onChange={e => {
-                                                        _this.setState({recipient: e.target.value});
-                                                    }}/>
+                                                        _this.setState({recipient: e.target.value});}}
+
+                                                        onBlur={e => {
+                                                            _this.checkContact();}}
+                                                    />
                                                     </div>
 
                                                     <div className="mt-3">
-                                                        <a className="btn btn-primary btn-block"
+                                                        <a className={"btn btn-primary btn-block " + (_this.state.recipientAccountValid ? '' : 'disabled') }
                                                            onClick={_this.sendTokenToDP}> Data controller - send CR
                                                             JWT to Data principal</a>
                                                     </div>
@@ -1159,8 +1212,9 @@ class CrStoreSendBlockchain extends Component {
 
                                                     <div className="row">
                                                         <div className="col-md-12">
-                                                            <a className="btn btn-primary btn-block"
-                                                               onClick={_this.blockchainSignAndSendTokenToDP}> Data controller - Blockchain sign and
+                                                            <a className={"btn btn-primary btn-block " + (_this.state.recipientAccountValid ? '' : 'disabled') }
+                                                               onClick={_this.blockchainSignAndSendTokenToDP}> Data
+                                                                controller - Blockchain sign and
                                                                 send CR
                                                                 JWT to Data principal</a>
                                                         </div>
@@ -1172,13 +1226,9 @@ class CrStoreSendBlockchain extends Component {
                                     </ListGroup>
 
 
-
-
-
                                 </Loader>
                             </div>
                         </div>
-
 
 
                     </div>
@@ -1229,6 +1279,11 @@ class CrStoreSendBlockchain extends Component {
                                 <CSVLink
                                     filename={"received_data_receipts.csv"}
                                     className={"btn bnt-sm btn-secondary float-right mb-2 mt-0"}
+                                    // headers={[
+                                    //     { label: 'Data Principal', key: 'message.from' },
+                                    //     { label: 'Valid' },
+                                    //     { label: 'On Blockchain', key: 'consentStatus' }
+                                    // ]}
                                     data={this.state.sentMessages}><i className="fa fa-download"></i> Download
                                     Data</CSVLink>
                             </div>
@@ -1320,7 +1375,7 @@ class CrStoreSendBlockchain extends Component {
                                                     Cell: row => {
                                                         let value = (row.value && row.value.updated) ? row.value.updated : 'n/a';
 
-                                                        if(value === '0x0000000000000000000000000000000000000000') {
+                                                        if (value === '0x0000000000000000000000000000000000000000') {
                                                             value = '';
                                                         }
 
@@ -1467,9 +1522,15 @@ class CrStoreSendBlockchain extends Component {
                                                     Header: "Reference",
                                                     accessor: "consentStatus",
                                                     Cell: row => {
+                                                        let value = (row.value && row.value.updated) ? row.value.updated : 'n/a';
+
+                                                        if (value === '0x0000000000000000000000000000000000000000') {
+                                                            value = '';
+                                                        }
+
                                                         return (
                                                             <div>
-                                                                {(row.value && row.value.updated) ? row.value.updated : 'n/a'}
+                                                                {value}
                                                             </div>
                                                         )
                                                     }
@@ -1535,53 +1596,54 @@ class CrStoreSendBlockchain extends Component {
                         >
 
 
-                        <div className="row">
-                            <div className="col-md-12 mb-3">
+                            <div className="row">
+                                <div className="col-md-12 mb-3">
 
 
-                                <ConsentViewer type="text" data={_this.state.consentDetailsData.decodedToken}/>
-                            </div>
+                                    <ConsentViewer type="text" data={_this.state.consentDetailsData.decodedToken}/>
+                                </div>
 
-                            <div className="p-3">
-                                <div className="row">
-                                    {_this.state.typeOfMessageInModal === 'received' &&
-                                    <div className="col-md-7 mb-3">
-                                        <a className="btn btn-primary" onClick={_this.crDetailsModalGiveConsent}>Give
-                                            Consent and Sign on <i
-                                                className="fa fa-link"></i></a>
-                                        <a className="btn btn-primary mt-2" onClick={_this.crDetailsModalRevokeConsent}>Revoke
-                                            Consent</a>
-                                    </div>
-                                    }
-                                    <div className="col-md-4 mb-2">
-                                        <div>Token: <b>{_.isEmpty(_this.state.consentDetailsData.decodedToken, true) ? 'INVALID' : 'VALID'}</b>
+                                <div className="p-3">
+                                    <div className="row">
+                                        {_this.state.typeOfMessageInModal === 'received' &&
+                                        <div className="col-md-7 mb-3">
+                                            <a className="btn btn-primary" onClick={_this.crDetailsModalGiveConsent}>Give
+                                                Consent and Sign on <i
+                                                    className="fa fa-link"></i></a>
+                                            <a className="btn btn-primary mt-2"
+                                               onClick={_this.crDetailsModalRevokeConsent}>Revoke
+                                                Consent</a>
                                         </div>
-                                        <div
-                                            className="mt-4">Signature: <b>{_.isEmpty(_this.state.consentDetailsData.verified, true) ? 'INVALID' : 'VALID'}</b>
+                                        }
+                                        <div className="col-md-4 mb-2">
+                                            <div>Token: <b>{_.isEmpty(_this.state.consentDetailsData.decodedToken, true) ? 'INVALID' : 'VALID'}</b>
+                                            </div>
+                                            <div
+                                                className="mt-4">Signature: <b>{_.isEmpty(_this.state.consentDetailsData.verified, true) ? 'INVALID' : 'VALID'}</b>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div className="row">
+                                        <div className="col-md-12 mb-3">
+                                            <div className="mt-5">
+                                                <Button color="secondary"
+                                                        onClick={_this.toggleConsentDetailsModal}>Close</Button>
+                                            </div>
+
+
                                         </div>
                                     </div>
                                 </div>
-
-
-                                <div className="row">
-                                    <div className="col-md-12 mb-3">
-                                        <div className="mt-5">
-                                            <Button color="secondary"
-                                                    onClick={_this.toggleConsentDetailsModal}>Close</Button>
-                                        </div>
-
-
-                                    </div>
-                                </div>
                             </div>
-                        </div>
 
                         </Loader>
 
                     </ModalBody>
                 </Modal>
 
-                <ToastContainer />
+                <ToastContainer/>
             </div>
 
 

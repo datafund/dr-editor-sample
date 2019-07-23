@@ -93,7 +93,7 @@ class CrEditorViewer extends Component {
         const _this = this;
 
 
-        document.getElementsByClassName("mainContent")[0].classList.replace('container-fluid', 'container');
+        //document.getElementsByClassName("mainContent")[0].classList.replace('container-fluid', 'container');
 
         console.log(DataReceipt);
 
