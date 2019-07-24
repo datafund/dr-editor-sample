@@ -316,6 +316,12 @@ class CrStoreSendBlockchain extends Component {
 
         } catch (err) {
             console.error(err);
+
+            toast.error("Error: " + err);
+
+            _this.setState({
+                loadingInProgress: false
+            });
         }
     }
 
@@ -394,15 +400,19 @@ class CrStoreSendBlockchain extends Component {
 
         try {
             await _this.state.account.lookupContact(_this.state.recipient, console.log, console.log, console.log);
-            console.log("address:" + await _this.state.account.getAddressOf(_this.state.recipient));
+            console.log("address: " + await _this.state.account.getAddressOf(_this.state.recipient));
             _this.setState({
                 recipientAccountValid: true
             });
+
+            toast.success("Recipient is valid!");
         } catch (err) {
             console.error(`>>>>>>> ${err}`, err);
             _this.setState({
                 recipientAccountValid: false
             });
+
+            toast.error("Error: " + err);
         }
     }
 

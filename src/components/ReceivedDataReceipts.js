@@ -154,6 +154,12 @@ class ReceivedDataReceipts extends Component {
 
         } catch (err) {
             console.error(err);
+
+            toast.error("Error: " + err);
+
+            _this.setState({
+                loadingInProgress: false
+            });
         }
     }
 
