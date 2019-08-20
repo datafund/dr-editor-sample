@@ -1,7 +1,7 @@
 /**
  * Datafund Consent generator & viewer
  * Licensed under the MIT license
- * Created by Markus Zevnik, Tadej Fius, �rt Ahlin
+ * Created by Markus Zevnik, Tadej Fius, Črt Ahlin
  */
 
 import React, {Component} from 'react';
@@ -70,13 +70,15 @@ class App extends Component {
                 <Navbar color="faded" className="" light expand="lg">
                     <div className="container-fluid">
 
-                        <Link className="navbar-brand" to="/"><img src={logo} alt={logo}
+                        <Link className="navbar-brand" to="/"><img src={logo} alt={logo} title="Datafund"
                                                                    className="img-fluid"/></Link>
 
                         <Collapse isOpen={this.state.isOpen} navbar>
                             <Nav className="ml-auto" navbar>
                             </Nav>
                         </Collapse>
+                        <p>Consent Receipt Generator and Viewer demo application is meant only for demonstration purposes - as a reference implementation of different modules - and is not suitable to be used in production environments.
+                        <br/>The modules are open sourced and free to use in your own configuration.</p>
                     </div>
                 </Navbar>
 

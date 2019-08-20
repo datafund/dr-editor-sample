@@ -1,7 +1,7 @@
 /**
  * Datafund Consent generator & viewer
  * Licensed under the MIT license
- * Created by Markus Zevnik, Tadej Fius, �rt Ahlin
+ * Created by Markus Zevnik, Tadej Fius, Črt Ahlin
  */
 
 import React, {Component} from 'react';
@@ -374,19 +374,25 @@ class CrEditorViewer extends Component {
                                 <ListGroup>
 
                                     <ListGroupItem>
-                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                        <ListGroupItemHeading className="m-0" title="Structure of Consent Receipt" onClick={(e) => {
                                             _this.setState({schemaVisible: !_this.state.schemaVisible})
                                         }}><i
                                             className={_this.state.schemaVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> JSON
                                             Schema</ListGroupItemHeading>
                                         <Collapse isOpen={_this.state.schemaVisible}>
                                             <div>
+                                                <br></br>
+
+                                                <p>JSON Schema defines the structure of the Consent Receipt. Kantara compliant consent receipts must follow a prescribed schema.</p>
+
+                                                <p>The forms below can be used to view the currently loaded JSON Schema or edit it.</p>
 
 
                                                 <Nav tabs className="mt-4">
                                                     <NavItem>
                                                         <NavLink
                                                             className={classnames({active: this.state.activeSchemaTab === '1'})}
+                                                            title="View JSON Schema"
                                                             onClick={() => {
                                                                 this.setState({activeSchemaTab: '1'});
                                                             }}>
@@ -396,6 +402,7 @@ class CrEditorViewer extends Component {
                                                     <NavItem>
                                                         <NavLink
                                                             className={classnames({active: this.state.activeSchemaTab === '2'})}
+                                                            title="Edit JSON Schema"
                                                             onClick={() => {
                                                                 this.setState({activeSchemaTab: '2'});
                                                             }}>
@@ -440,7 +447,7 @@ class CrEditorViewer extends Component {
                                     </ListGroupItem>
 
                                     <ListGroupItem>
-                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                        <ListGroupItemHeading className="m-0" title="Displayed elements of Consent Receipt" onClick={(e) => {
                                             _this.setState({uiSchemaVisible: !_this.state.uiSchemaVisible})
                                         }}><i
                                             className={_this.state.uiSchemaVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> UI
@@ -498,7 +505,7 @@ class CrEditorViewer extends Component {
                                     </ListGroupItem>
 
                                     <ListGroupItem>
-                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                        <ListGroupItemHeading className="m-0" title="Data entered into the Consent Receipt" onClick={(e) => {
                                             _this.setState({formDataVisible: !_this.state.formDataVisible})
                                         }}><i
                                             className={_this.state.formDataVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Form
@@ -522,7 +529,7 @@ class CrEditorViewer extends Component {
                                 <ListGroup className="mt-3">
 
                                     <ListGroupItem>
-                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                        <ListGroupItemHeading className="m-0" title="Use private key to encode JSON Web Token (JWT)" onClick={(e) => {
                                             _this.setState({encodeJwtVisible: !_this.state.encodeJwtVisible})
                                         }}><i
                                             className={_this.state.encodeJwtVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Encode
@@ -623,7 +630,7 @@ class CrEditorViewer extends Component {
 
                                     <ListGroupItem
                                         className={_.isEmpty(_this.state.jwtToken, true) ? "disabled" : ""}>
-                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                        <ListGroupItemHeading className="m-0" title="View encoded JSON Web Token (JWT)" onClick={(e) => {
                                             _this.setState({jwtTokenEncodedVisible: !_this.state.jwtTokenEncodedVisible})
                                         }}><i
                                             className={_this.state.jwtTokenEncodedVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Encoded
@@ -733,7 +740,7 @@ class CrEditorViewer extends Component {
 
                                     <ListGroupItem
                                         className={_.isEmpty(_this.state.jwtTokenDecoded, true) ? "disabled" : ""}>
-                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                        <ListGroupItemHeading className="m-0" title="Decoded JSON Web Token (JWT)" onClick={(e) => {
                                             _this.setState({jwtTokenDecodedVisible: !_this.state.jwtTokenDecodedVisible})
                                         }}><i
                                             className={_this.state.jwtTokenDecodedVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Decoded
@@ -755,7 +762,7 @@ class CrEditorViewer extends Component {
                                 <ListGroup className="mt-3 mb-3">
 
                                     <ListGroupItem>
-                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                        <ListGroupItemHeading className="m-0" title="Download / upload Project Configuration File" onClick={(e) => {
                                             _this.setState({projectConfigurationVisible: !_this.state.projectConfigurationVisible})
                                         }}><i
                                             className={_this.state.projectConfigurationVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Project
@@ -854,8 +861,10 @@ class CrEditorViewer extends Component {
 
                         <ButtonGroup className="mt-2 mb-3">
                             <Button className={classnames({active: this.state.mode === 'editor'})}
+                                    title="Editable Consent Receipt"
                                     onClick={e => this.setState({mode: 'editor'})}>CR Editor</Button>
                             <Button className={classnames({active: this.state.mode === 'viewer'})}
+                                    title="Read-only Consent Receipt"
                                     onClick={e => this.setState({mode: 'viewer'})}>CR Viewer</Button>
                         </ButtonGroup>
 
@@ -869,6 +878,10 @@ class CrEditorViewer extends Component {
                                 foregroundStyle={{color: '#000000'}}
                                 message={loadingText}
                             >
+
+                            <p>Consent Receipt Editor allows for editing of data in the Consent Receipt. For example, it could be used by the Data controller when constructing a proposal to send to a Data principal.</p>
+
+                            <p>The structure of the form bellow depends on JSON Schema, while the functionality depends on the UI Schema. Entered data is stored in FormData.</p>
 
                                 <Form
                                     ref={(form) => {
@@ -889,6 +902,10 @@ class CrEditorViewer extends Component {
 
                         {_this.state.mode === 'viewer' &&
                         <div className="card card-body bg-light mb-5">
+
+                            <p>Consent Receipt Viewer allows a read only view of the Consent Receipt. For example, it could be used to view details of a saved Consent Receipt.</p>
+
+                            <p>The aestethics are free to be customized for a particular use.</p>
 
                             <h4 className="mt-1">Consent receipt viewer</h4>
 
