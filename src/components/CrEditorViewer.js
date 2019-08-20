@@ -453,6 +453,10 @@ class CrEditorViewer extends Component {
                                             className={_this.state.uiSchemaVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> UI
                                             Schema</ListGroupItemHeading>
                                         <Collapse isOpen={this.state.uiSchemaVisible}>
+
+                                        <br/>
+                                        <p>UI Schema JSON file defines the way the Consent Receipt will be displayed on the user interface. For example, the entry form for a particual piece of data could be a selectable menu with 5 available options.</p>
+                                        <p>The UI Schema is most useful in the part of the process, where a Data controler is constructing a proposal via the Consent receipt editor and needs a user friendly graphical user interface.</p>
                                             <div>
 
 
@@ -460,6 +464,7 @@ class CrEditorViewer extends Component {
                                                     <NavItem>
                                                         <NavLink
                                                             className={classnames({active: this.state.uiSchemaTab === '1'})}
+                                                            title="View UI Schema JSON"
                                                             onClick={() => {
                                                                 this.setState({uiSchemaTab: '1'});
                                                             }}>
@@ -469,6 +474,7 @@ class CrEditorViewer extends Component {
                                                     <NavItem>
                                                         <NavLink
                                                             className={classnames({active: this.state.uiSchemaTab === '2'})}
+                                                            title="Edit UI Schema JSON"
                                                             onClick={() => {
                                                                 this.setState({uiSchemaTab: '2'});
                                                             }}>
@@ -511,6 +517,9 @@ class CrEditorViewer extends Component {
                                             className={_this.state.formDataVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Form
                                             Data</ListGroupItemHeading>
                                         <Collapse isOpen={this.state.formDataVisible}>
+
+                                            <br/>
+                                            <p>Form Data JSON contains all the actual data in the Consent Receipt. This is the part that gets saved into the Consent Receipt JSON Web Token and signed.</p>
                                             <div>
 
 
@@ -535,6 +544,11 @@ class CrEditorViewer extends Component {
                                             className={_this.state.encodeJwtVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Encode
                                             JWT</ListGroupItemHeading>
                                         <Collapse isOpen={this.state.encodeJwtVisible}>
+
+                                            <br/>
+                                            <p>The Form Data JSON gets encoded into a JSON Web Token (JWT) and signed. Supported methods of signing are RS256 (default) and HS256.</p>
+                                            <p>RS256 needs as input an RSA private key. Example private/public key pair is <a href="https://github.com/datafund/dr-editor-sample/blob/master/example_files/private_and_public_key.txt">here</a>. You need to include the BEGIN/END parts.</p>
+                                            <p>HS256 needs a string as input (shared secret principle). </p>
                                             <div>
 
                                                 {_.isEmpty(_this.state.formData, true) &&
@@ -550,6 +564,7 @@ class CrEditorViewer extends Component {
                                                         <NavItem>
                                                             <NavLink
                                                                 className={classnames({active: this.state.algorithmTab === '1'})}
+                                                                title="Encode JWT with RS256 signing"
                                                                 onClick={() => {
                                                                     this.setState({algorithmTab: '1'});
                                                                 }}>
@@ -559,6 +574,7 @@ class CrEditorViewer extends Component {
                                                         <NavItem>
                                                             <NavLink
                                                                 className={classnames({active: this.state.algorithmTab === '2'})}
+                                                                title="Encode JWT with HS256 signing"
                                                                 onClick={() => {
                                                                     this.setState({algorithmTab: '2'});
                                                                 }}>
@@ -584,7 +600,7 @@ class CrEditorViewer extends Component {
                                                                     defaultValue={_this.state.privateKey}></textarea>
                                                             </div>
 
-                                                            <a className="btn btn-success text-white mt-3 mb-3"
+                                                            <label className="btn btn-success text-white mt-3 mb-3"
                                                                onClick={(e) => {
                                                                    if (_this.state.privateKey === '') {
                                                                        alert("Valid private key is required!");
@@ -593,7 +609,7 @@ class CrEditorViewer extends Component {
                                                                    _this.generateJwtRS256()
                                                                }}><i className="fas fa-lock"></i> Encode JWT
                                                                 (RS256)
-                                                            </a>
+                                                            </label>
 
                                                         </TabPane>
 
@@ -609,7 +625,7 @@ class CrEditorViewer extends Component {
                                                             }}/></div>
 
 
-                                                            <a className="btn btn-success text-white mt-3 mb-3"
+                                                            <label className="btn btn-success text-white mt-3 mb-3"
                                                                onClick={(e) => {
                                                                    if (_this.state.secret === '') {
                                                                        alert("256 bit secret string is required!");
@@ -617,7 +633,7 @@ class CrEditorViewer extends Component {
                                                                    }
                                                                    _this.generateJwtHS256()
                                                                }}><i className="fas fa-lock"></i> Encode JWT
-                                                                (HS256)</a>
+                                                                (HS256)</label>
 
                                                         </TabPane>
                                                     </TabContent>
@@ -637,6 +653,10 @@ class CrEditorViewer extends Component {
                                             JWT</ListGroupItemHeading>
                                         {!_.isEmpty(_this.state.jwtToken, true) &&
                                         <Collapse isOpen={this.state.jwtTokenEncodedVisible}>
+
+                                            <br/>
+                                            <p>Encoded JSON Web token (JWT) is a long string composed of three parts, separated with two periods. It can be decoded/verified independently on the <a href="https://jwt.io">jwt.io</a> webpage. </p>
+                                            <p>It can also be downloaded and saved for later reference.</p>
                                             <div>
 
                                                     <pre
@@ -644,20 +664,25 @@ class CrEditorViewer extends Component {
 
 
                                                 <div>
-                                                    <a className="btn btn-success text-white mt-3 mr-1"
+                                                    <label className="btn btn-success text-white mt-3 mr-1"
                                                        onClick={(e) => {
                                                            _this.downloadJwt()
-                                                       }}><i className="fas fa-download"></i> Download JWT</a>
+                                                       }}><i className="fas fa-download"></i> Download JWT</label>
                                                 </div>
 
 
                                                 <h5 className="mt-4">Verify signature</h5>
+
+                                                <p>The JWT is signed, and the signature can be verified to see if contents have been tampered with.</p>
+                                                <p>The RS256 public key is taken from JWT part with Form Data, if found in appropriate field.</p>
+                                                <p>Decoding the JWT means the three parts of the JWT are shown as "human readable" JSON.</p>
 
                                                 <Nav tabs>
 
                                                     <NavItem>
                                                         <NavLink
                                                             className={classnames({active: this.state.algorithmTab === '1'})}
+                                                            title="Verify RS256 signature"
                                                             onClick={() => {
                                                                 this.setState({algorithmTab: '1'});
                                                             }}>
@@ -667,6 +692,7 @@ class CrEditorViewer extends Component {
                                                     <NavItem>
                                                         <NavLink
                                                             className={classnames({active: this.state.algorithmTab === '2'})}
+                                                            title="Verify HS256 signature"
                                                             onClick={() => {
                                                                 this.setState({algorithmTab: '2'});
                                                             }}>
@@ -692,11 +718,11 @@ class CrEditorViewer extends Component {
                                                             defaultValue={_this.state.formData.publicKey}></textarea>
                                                         </div>
 
-                                                        <a className="btn btn-success text-white mt-3"
+                                                        <label className="btn btn-success text-white mt-3"
                                                            onClick={(e) => {
                                                                _this.verifyJwtRS256()
                                                            }}><i className="fas fa-certificate"></i> Verify
-                                                            Signature (RS256)</a>
+                                                            Signature (RS256)</label>
 
                                                     </TabPane>
 
@@ -711,20 +737,20 @@ class CrEditorViewer extends Component {
                                                         }}/></div>
 
 
-                                                        <a className="btn btn-success text-white mt-3"
+                                                        <label className="btn btn-success text-white mt-3"
                                                            onClick={(e) => {
                                                                _this.verifyJwtHS256()
                                                            }}><i className="fas fa-certificate"></i> Verify
-                                                            Signature (HS256)</a>
+                                                            Signature (HS256)</label>
 
                                                     </TabPane>
 
                                                 </TabContent>
 
 
-                                                <a className="btn btn-success text-white mt-3" onClick={(e) => {
+                                                <label className="btn btn-success text-white mt-3" onClick={(e) => {
                                                     _this.decodeJwt()
-                                                }}><i className="fas fa-unlock"></i> Decode JWT</a><br/>
+                                                }}><i className="fas fa-unlock"></i> Decode JWT</label><br/>
 
                                                 {/*{!_.isEmpty(_this.state.signature, true) &&*/}
                                                 {/*<JSONPretty*/}
@@ -747,6 +773,9 @@ class CrEditorViewer extends Component {
                                             JWT</ListGroupItemHeading>
                                         {!_.isEmpty(_this.state.jwtTokenDecoded, true) &&
                                         <Collapse isOpen={this.state.jwtTokenDecodedVisible}>
+
+                                        <br/>
+                                        <p>Decoded JWT is shown as JSON, containing all three parts of the JWT (including Form Data as payload).</p>
                                             <div>
                                                 <JSONPretty
                                                     className="p-2 mt-3"
@@ -770,6 +799,10 @@ class CrEditorViewer extends Component {
 
                                         <Collapse isOpen={this.state.projectConfigurationVisible}>
 
+                                        <br/>
+                                        <p>Project Configuration JSON file contains some general settings as well as all other JSON files nested inside it (JSON Schema, UI Schema, FormData).</p>
+                                        <p>With forms below you can view or edit the part of the Project Configuration file with general settings.</p>
+
 
                                             <div>
 
@@ -777,6 +810,7 @@ class CrEditorViewer extends Component {
                                                     <NavItem>
                                                         <NavLink
                                                             className={classnames({active: this.state.projectConfigurationTab === '1'})}
+                                                            title="View JSON Project Configuration settings"
                                                             onClick={() => {
                                                                 this.setState({projectConfigurationTab: '1'});
                                                             }}>
@@ -786,6 +820,7 @@ class CrEditorViewer extends Component {
                                                     <NavItem>
                                                         <NavLink
                                                             className={classnames({active: this.state.projectConfigurationTab === '2'})}
+                                                            title="Edit JSON Project Configuration settings"
                                                             onClick={() => {
                                                                 this.setState({projectConfigurationTab: '2'});
                                                             }}>
@@ -820,17 +855,19 @@ class CrEditorViewer extends Component {
                                                 </TabContent>
 
                                                 <div className="pt-3 pb-2">
-                                                    <a className="btn btn-primary d-inline"
+                                                    <label className="btn btn-primary d-inline"
+                                                        title="Download Project Configuration JSON File"
                                                        onClick={_this.downloadProjectConfigFile}><i
                                                         className="fa fa-download"></i> Download Project
                                                         Configuration
-                                                        File</a>
+                                                        File</label>
                                                 </div>
 
                                                 <hr className="mb-4"/>
 
                                                 <div className="mb-3">
-                                                    <label className="btn btn-primary d-inline" htmlFor={"file"}><i
+                                                    <label className="btn btn-primary d-inline" 
+                                                    title="Upload Project Configuration JSON File" htmlFor={"file"}><i
                                                         className="fa fa-upload"></i> Upload Project Configuration
                                                         File <input id="file" className="mt-4" type="file"
                                                                     accept=".json,application/json"
