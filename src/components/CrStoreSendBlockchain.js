@@ -957,12 +957,6 @@ class CrStoreSendBlockchain extends Component {
 
                     <div className="col-md-4 border-right">
 
-                        <div className="row">
-                            <div className="col-md-12">
-                                <h5>Decentralized storage and sending</h5>
-                            </div>
-                        </div>
-
 
                         <div className="row">
                             <div className="col-md-12">

@@ -473,21 +473,19 @@ class ReceivedDataReceipts extends Component {
 
                         <div className="row">
                             <div className="col-md-12">
-                                <h5>Decentralized storage and sending</h5>
-                            </div>
-                        </div>
-
-
-                        <div className="row">
-                            <div className="col-md-12">
 
                                 <ListGroupItem>
-                                    <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                    <ListGroupItemHeading className="m-0" title="Set the account/wallet to work with" onClick={(e) => {
                                         _this.setState({dataControllerAccountVisible: !_this.state.dataControllerAccountVisible})
                                     }}><i
                                         className={_this.state.dataControllerAccountVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Data
                                         Account & Wallet</ListGroupItemHeading>
                                     <Collapse isOpen={this.state.dataControllerAccountVisible}>
+
+                                        <br/>
+                                        <p>Fairdrop account must be used. It can be created or imported via a JSON file containing the private key.</p>
+                                        <p>It is browser specific - on a different browser or computer you need to re-import it.</p>
+                                        <p>It has to be unlocked to be used.</p>
                                         <div className="mt-3 mb-3">
 
                                             <div className="form-group"><label
@@ -735,11 +733,11 @@ class ReceivedDataReceipts extends Component {
 
                                                         return (
                                                             <div className="text-center">
-                                                                <a className="btn btn-primary btn-sm pt-1 pb-1" onClick={(e) => {
+                                                                <label className="btn btn-primary btn-sm pt-1 pb-1" onClick={(e) => {
                                                                     e.preventDefault();
                                                                     e.stopPropagation();
                                                                     _this.showConsentDetails(row.original, 'received')
-                                                                }}>View</a>
+                                                                }}>View</label>
                                                             </div>
                                                         )
                                                     }
@@ -800,9 +798,9 @@ class ReceivedDataReceipts extends Component {
                                 <div className="row">
                                     {_this.state.typeOfMessageInModal === 'received' &&
                                     <div className="col-md-7 mb-3">
-                                        <a className="btn btn-primary" onClick={_this.crDetailsModalGiveConsent}>Give Consent and Sign on <i
-                                            className="fa fa-link"></i></a>
-                                        <a className="btn btn-primary mt-2" onClick={_this.crDetailsModalRevokeConsent}>Revoke Consent</a>
+                                        <label className="btn btn-primary" onClick={_this.crDetailsModalGiveConsent}>Give Consent and Sign on <i
+                                            className="fa fa-link"></i></label>
+                                        <label className="btn btn-primary mt-2" onClick={_this.crDetailsModalRevokeConsent}>Revoke Consent</label>
                                     </div>
                                     }
                                     <div className="col-md-4 mb-2">
