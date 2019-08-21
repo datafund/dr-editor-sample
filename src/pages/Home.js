@@ -88,13 +88,13 @@ class App extends Component {
                         <div className="col-md-12">
 
                             <ButtonGroup className="mb-4">
-                                <Button active={this.state.activeMainTab === '1'} onClick={() => {
+                                <Button active={this.state.activeMainTab === '1'} title="Generate and view a Consent Receipt" onClick={() => {
                                     this.setState({activeMainTab: '1'});
                                 }}>Consent Receipt Editor &<br/> Viewer</Button>
-                                <Button active={this.state.activeMainTab === '2'} onClick={() => {
+                                <Button active={this.state.activeMainTab === '2'} title="Sign & send a Consent Receipt as Data controller" onClick={() => {
                                     this.setState({activeMainTab: '2'});
                                 }}>Consent Receipt Storage & Sending &<br/> Blockchain signing (data controller / user)</Button>
-                                <Button active={this.state.activeMainTab === '3'} onClick={() => {
+                                <Button active={this.state.activeMainTab === '3'} title="Browse and sign Consent Receipts as Data principal" onClick={() => {
                                     this.setState({activeMainTab: '3'});
                                 }}>Received Data Receipts<br/> (data principal / giver)</Button>
                             </ButtonGroup>
