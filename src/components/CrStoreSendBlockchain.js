@@ -957,12 +957,6 @@ class CrStoreSendBlockchain extends Component {
 
                     <div className="col-md-4 border-right">
 
-                        <div className="row">
-                            <div className="col-md-12">
-                                <h5>Decentralized storage and sending</h5>
-                            </div>
-                        </div>
-
 
                         <div className="row">
                             <div className="col-md-12">
@@ -976,12 +970,18 @@ class CrStoreSendBlockchain extends Component {
                                 >
 
                                     <ListGroupItem>
-                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                        <ListGroupItemHeading className="m-0" title="Set the account/wallet to work with" onClick={(e) => {
                                             _this.setState({dataControllerAccountVisible: !_this.state.dataControllerAccountVisible})
                                         }}><i
                                             className={_this.state.dataControllerAccountVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Data
-                                            Controller Account & wallet</ListGroupItemHeading>
+                                            Controller Account & Wallet</ListGroupItemHeading>
                                         <Collapse isOpen={this.state.dataControllerAccountVisible}>
+
+                                            <br/>
+                                            <p>Fairdrop account must be used. It can be created or imported via a JSON file containing the private key.</p>
+                                            <p>It is browser specific - on a different browser or computer you need to re-import it.</p>
+                                            <p>It has to be unlocked to be used.</p>
+
                                             <div className="mt-3 mb-3">
 
                                                 <div className="form-group"><label
@@ -1083,13 +1083,16 @@ class CrStoreSendBlockchain extends Component {
                                     <ListGroup className="mt-3 mb-3">
 
                                         <ListGroupItem>
-                                            <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                            <ListGroupItemHeading className="m-0" title="Set the Project configuration file to use" onClick={(e) => {
                                                 _this.setState({projectConfigurationVisible: !_this.state.projectConfigurationVisible})
                                             }}><i
                                                 className={_this.state.projectConfigurationVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Project
                                                 Configuration</ListGroupItemHeading>
 
                                             <Collapse isOpen={this.state.projectConfigurationVisible}>
+
+                                            <br/>
+                                            <p>Use a Project Configuration file generated and saved on the first tab.</p>
 
                                                 <div>
 
@@ -1123,12 +1126,16 @@ class CrStoreSendBlockchain extends Component {
                                     <ListGroup className="mt-3">
 
                                         <ListGroupItem>
-                                            <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                            <ListGroupItemHeading className="m-0" title="Encode the Consent Receipt JWT" onClick={(e) => {
                                                 _this.setState({encodeJwtVisible: !_this.state.encodeJwtVisible})
                                             }}><i
                                                 className={_this.state.encodeJwtVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Encode
                                                 JWT</ListGroupItemHeading>
                                             <Collapse isOpen={this.state.encodeJwtVisible}>
+
+                                            <br/>
+                                            <p>The Form Data JSON gets encoded into a JSON Web Token (JWT) and signed. </p>
+                                            <p>RS256 needs as input an RSA private key. Example private/public key pair is <a href="https://github.com/datafund/dr-editor-sample/blob/master/example_files/private_and_public_key.txt">here</a>. You need to include the BEGIN/END parts.</p>
                                                 <div>
 
 
@@ -1139,7 +1146,6 @@ class CrStoreSendBlockchain extends Component {
 
                                                     {!_.isEmpty(_this.state.formData, true) &&
                                                     <div>
-                                                        <h5 className="mt-4">Encode</h5>
 
                                                         <div className="mt-3">
 
@@ -1155,14 +1161,14 @@ class CrStoreSendBlockchain extends Component {
                                                                     defaultValue={_this.state.privateKey}></textarea>
                                                             </div>
 
-                                                            <a className="btn btn-success text-white mt-3 mb-3"
+                                                            <label className="btn btn-success text-white mt-3 mb-3"
                                                                onClick={(e) => {
                                                                    if (_this.state.privateKey === '') {
                                                                        alert("Valid private key is required!");
                                                                        return;
                                                                    }
                                                                    _this.generateJwtRS256()
-                                                               }}><i className="fas fa-lock"></i> Encode JWT (RS256)</a>
+                                                               }}><i className="fas fa-lock"></i> Encode JWT (RS256)</label>
 
                                                             {!_.isEmpty(_this.state.jwtToken, true) &&
                                                             <pre
@@ -1183,12 +1189,16 @@ class CrStoreSendBlockchain extends Component {
 
                                     <ListGroup className="mt-3">
                                         <ListGroupItem>
-                                            <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                            <ListGroupItemHeading className="m-0" title="Send the Consent receipt proposal to another Fairdrop user to sign via blockchain" onClick={(e) => {
                                                 _this.setState({sendCRVisible: !_this.state.sendCRVisible})
                                             }}><i
                                                 className={_this.state.sendCRVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Send
                                                 Consent Receipt JWT</ListGroupItemHeading>
                                             <Collapse isOpen={this.state.sendCRVisible}>
+
+
+                                            <br/>
+                                            <p>Receiver has to have a Fairdrop account. </p>
                                                 <div className="mt-3 mb-3">
 
                                                     <div className="form-group"><label
@@ -1206,27 +1216,23 @@ class CrStoreSendBlockchain extends Component {
                                                     />
                                                     </div>
 
+                                                    <p>You can "send" the Consent Receipt by saving it into receiver's Fairdrop mailbox.</p>
+
                                                     <div className="mt-3">
-                                                        <a className={"btn btn-primary btn-block " + (_this.state.recipientAccountValid ? '' : 'disabled') }
+                                                        <label className={"btn btn-primary btn-block " + (_this.state.recipientAccountValid ? '' : 'disabled') }
                                                            onClick={_this.sendTokenToDP}> Data controller - send CR
-                                                            JWT to Data principal</a>
+                                                            JWT to Data principal</label>
                                                     </div>
 
-
-                                                    <div className="row">
-                                                        <div className="col-md-12 mt-5">
-                                                            <h5>Blockchain signing</h5>
-                                                        </div>
-                                                    </div>
-
+                                                    <p>You can additionaly sign the Consent Receipt with your private key and send it to receiver. In this case, you would expect the receiver to also sign, to make the consent transaction legitimate.</p>
 
                                                     <div className="row">
                                                         <div className="col-md-12">
-                                                            <a className={"btn btn-primary btn-block " + (_this.state.recipientAccountValid ? '' : 'disabled') }
+                                                            <label className={"btn btn-primary btn-block " + (_this.state.recipientAccountValid ? '' : 'disabled') }
                                                                onClick={_this.blockchainSignAndSendTokenToDP}> Data
                                                                 controller - Blockchain sign and
                                                                 send CR
-                                                                JWT to Data principal</a>
+                                                                JWT to Data principal</label>
                                                         </div>
                                                     </div>
 
@@ -1402,12 +1408,12 @@ class CrStoreSendBlockchain extends Component {
 
                                                         return (
                                                             <div className="text-center">
-                                                                <a className="btn btn-primary btn-sm pt-1 pb-1"
+                                                                <label className="btn btn-primary btn-sm pt-1 pb-1"
                                                                    onClick={(e) => {
                                                                        e.preventDefault();
                                                                        e.stopPropagation();
                                                                        _this.showConsentDetails(row.original, 'sent')
-                                                                   }}>View</a>
+                                                                   }}>View</label>
                                                             </div>
                                                         )
                                                     }
@@ -1551,12 +1557,12 @@ class CrStoreSendBlockchain extends Component {
 
                                                         return (
                                                             <div className="text-center">
-                                                                <a className="btn btn-primary btn-sm pt-1 pb-1"
+                                                                <label className="btn btn-primary btn-sm pt-1 pb-1"
                                                                    onClick={(e) => {
                                                                        e.preventDefault();
                                                                        e.stopPropagation();
                                                                        _this.showConsentDetails(row.original, 'received')
-                                                                   }}>View</a>
+                                                                   }}>View</label>
                                                             </div>
                                                         )
                                                     }
@@ -1617,12 +1623,12 @@ class CrStoreSendBlockchain extends Component {
                                     <div className="row">
                                         {_this.state.typeOfMessageInModal === 'received' &&
                                         <div className="col-md-7 mb-3">
-                                            <a className="btn btn-primary" onClick={_this.crDetailsModalGiveConsent}>Give
+                                            <label className="btn btn-primary" onClick={_this.crDetailsModalGiveConsent}>Give
                                                 Consent and Sign on <i
-                                                    className="fa fa-link"></i></a>
-                                            <a className="btn btn-primary mt-2"
+                                                    className="fa fa-link"></i></label>
+                                            <label className="btn btn-primary mt-2"
                                                onClick={_this.crDetailsModalRevokeConsent}>Revoke
-                                                Consent</a>
+                                                Consent</label>
                                         </div>
                                         }
                                         <div className="col-md-4 mb-2">
