@@ -370,6 +370,102 @@ class CrEditorViewer extends Component {
                     <div className="col-md-6">
                         <div className="row">
                             <div className="col-md-12">
+                            <ListGroup className="mt-3 mb-3">
+
+<ListGroupItem>
+    <ListGroupItemHeading className="m-0" onClick={(e) => {
+        _this.setState({projectConfigurationVisible: !_this.state.projectConfigurationVisible})
+    }}><i
+        className={_this.state.projectConfigurationVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Project
+        Configuration</ListGroupItemHeading>
+
+    <Collapse isOpen={this.state.projectConfigurationVisible}>
+
+        <small>
+        <p>Project Configuration JSON file contains some general settings as well as all other JSON files nested inside it (JSON Schema, UI Schema, FormData).</p>
+        <p>With forms below you can view or edit the part of the Project Configuration file with general settings.</p>
+        <p>Download project to reuse it</p>
+        </small>
+
+        <div>
+
+            <Nav tabs className="mt-4">
+                <NavItem>
+                    <NavLink
+                        className={classnames({active: this.state.projectConfigurationTab === '1'})}
+                        onClick={() => {
+                            this.setState({projectConfigurationTab: '1'});
+                        }}>
+                        JSON
+                    </NavLink>
+                </NavItem>
+                <NavItem>
+                    <NavLink
+                        className={classnames({active: this.state.projectConfigurationTab === '2'})}
+                        onClick={() => {
+                            this.setState({projectConfigurationTab: '2'});
+                        }}>
+
+                        JSON Editor
+                    </NavLink>
+                </NavItem>
+            </Nav>
+            <TabContent activeTab={this.state.projectConfigurationTab}>
+                <TabPane tabId="1">
+
+                    <JSONPretty
+                        className="p-2 mt-3"
+                        json={this.state.defaultProperties}
+                        themeClassName="json-pretty"></JSONPretty>
+
+
+                </TabPane>
+                <TabPane tabId="2">
+
+                    {!_.isEmpty(_this.state.defaultProperties, true) &&
+                    <div className="mt-3">
+                        <JsonEditor
+                            value={_this.state.defaultProperties}
+                            onChange={_this.onDefaultPropertiesChange}
+                        />
+
+                    </div>
+                    }
+
+                </TabPane>
+            </TabContent>
+
+            <div className="pt-3 pb-2">
+                <a className="btn btn-primary d-inline"
+                   onClick={_this.downloadProjectConfigFile}><i
+                    className="fa fa-download"></i> Download Project
+                    Configuration
+                    File</a>
+            </div>
+
+            <hr className="mb-4"/>
+
+            <div className="mb-3">
+                <label className="btn btn-primary d-inline" htmlFor={"file"}><i
+                    className="fa fa-upload"></i> Upload Project Configuration
+                    File <input id="file" className="mt-4" type="file"
+                                accept=".json,application/json"
+                                onChange={_this.onInputFileChange} style={{
+                        width: '0px',
+                        height: '0px',
+                        overflow: 'hidden'
+                    }}/></label>
+            </div>
+
+
+        </div>
+
+    </Collapse>
+</ListGroupItem>
+
+
+</ListGroup>
+
 
                                 <ListGroup>
 
@@ -382,11 +478,16 @@ class CrEditorViewer extends Component {
                                         <Collapse isOpen={_this.state.schemaVisible}>
                                             <div>
 
+                                            <small>
+                                            <p>UI Schema JSON file defines the way the Consent Receipt will be displayed on the user interface. For example, the entry form for a particual piece of data could be a selectable menu with 5 available options.</p>
+                                            <p>The UI Schema is most useful in the part of the process, where a Data controler is constructing a proposal via the Consent receipt editor and needs a user friendly graphical user interface.</p>
+                                            </small>
 
                                                 <Nav tabs className="mt-4">
                                                     <NavItem>
                                                         <NavLink
                                                             className={classnames({active: this.state.activeSchemaTab === '1'})}
+                                                            title="View UI Schema JSON"
                                                             onClick={() => {
                                                                 this.setState({activeSchemaTab: '1'});
                                                             }}>
@@ -396,6 +497,7 @@ class CrEditorViewer extends Component {
                                                     <NavItem>
                                                         <NavLink
                                                             className={classnames({active: this.state.activeSchemaTab === '2'})}
+                                                            title="Edit UI Schema JSON"
                                                             onClick={() => {
                                                                 this.setState({activeSchemaTab: '2'});
                                                             }}>
@@ -447,7 +549,10 @@ class CrEditorViewer extends Component {
                                             Schema</ListGroupItemHeading>
                                         <Collapse isOpen={this.state.uiSchemaVisible}>
                                             <div>
-
+                                            <small>
+                                            <p>UI Schema JSON file defines the way the Consent Receipt will be displayed on the user interface. For example, the entry form for a particual piece of data could be a selectable menu with 5 available options.</p>
+                                            <p>The UI Schema is most useful in the part of the process, where a Data controler is constructing a proposal via the Consent receipt editor and needs a user friendly graphical user interface.</p>
+                                            </small>
 
                                                 <Nav tabs className="mt-4">
                                                     <NavItem>
@@ -504,6 +609,8 @@ class CrEditorViewer extends Component {
                                             className={_this.state.formDataVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Form
                                             Data</ListGroupItemHeading>
                                         <Collapse isOpen={this.state.formDataVisible}>
+                                            <small><p>Form Data JSON contains all the actual data in the Consent Receipt. This is the part that gets saved into the Consent Receipt JSON Web Token and signed.</p>
+                                            </small>
                                             <div>
 
 
@@ -646,6 +753,13 @@ class CrEditorViewer extends Component {
 
                                                 <h5 className="mt-4">Verify signature</h5>
 
+                                                <small>
+                                                <p>The JWT is signed, and the signature can be verified to see if contents have been tampered with.</p>
+                                                <p>The RS256 public key is taken from JWT part with Form Data, if found in appropriate field.</p>
+                                                <p>Decoding the JWT means the three parts of the JWT are shown as "human readable" JSON.</p>
+                                                </small>
+
+
                                                 <Nav tabs>
 
                                                     <NavItem>
@@ -752,96 +866,6 @@ class CrEditorViewer extends Component {
 
                                 </ListGroup>
 
-                                <ListGroup className="mt-3 mb-3">
-
-                                    <ListGroupItem>
-                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
-                                            _this.setState({projectConfigurationVisible: !_this.state.projectConfigurationVisible})
-                                        }}><i
-                                            className={_this.state.projectConfigurationVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Project
-                                            Configuration</ListGroupItemHeading>
-
-                                        <Collapse isOpen={this.state.projectConfigurationVisible}>
-
-
-                                            <div>
-
-                                                <Nav tabs className="mt-4">
-                                                    <NavItem>
-                                                        <NavLink
-                                                            className={classnames({active: this.state.projectConfigurationTab === '1'})}
-                                                            onClick={() => {
-                                                                this.setState({projectConfigurationTab: '1'});
-                                                            }}>
-                                                            JSON
-                                                        </NavLink>
-                                                    </NavItem>
-                                                    <NavItem>
-                                                        <NavLink
-                                                            className={classnames({active: this.state.projectConfigurationTab === '2'})}
-                                                            onClick={() => {
-                                                                this.setState({projectConfigurationTab: '2'});
-                                                            }}>
-
-                                                            JSON Editor
-                                                        </NavLink>
-                                                    </NavItem>
-                                                </Nav>
-                                                <TabContent activeTab={this.state.projectConfigurationTab}>
-                                                    <TabPane tabId="1">
-
-                                                        <JSONPretty
-                                                            className="p-2 mt-3"
-                                                            json={this.state.defaultProperties}
-                                                            themeClassName="json-pretty"></JSONPretty>
-
-
-                                                    </TabPane>
-                                                    <TabPane tabId="2">
-
-                                                        {!_.isEmpty(_this.state.defaultProperties, true) &&
-                                                        <div className="mt-3">
-                                                            <JsonEditor
-                                                                value={_this.state.defaultProperties}
-                                                                onChange={_this.onDefaultPropertiesChange}
-                                                            />
-
-                                                        </div>
-                                                        }
-
-                                                    </TabPane>
-                                                </TabContent>
-
-                                                <div className="pt-3 pb-2">
-                                                    <a className="btn btn-primary d-inline"
-                                                       onClick={_this.downloadProjectConfigFile}><i
-                                                        className="fa fa-download"></i> Download Project
-                                                        Configuration
-                                                        File</a>
-                                                </div>
-
-                                                <hr className="mb-4"/>
-
-                                                <div className="mb-3">
-                                                    <label className="btn btn-primary d-inline" htmlFor={"file"}><i
-                                                        className="fa fa-upload"></i> Upload Project Configuration
-                                                        File <input id="file" className="mt-4" type="file"
-                                                                    accept=".json,application/json"
-                                                                    onChange={_this.onInputFileChange} style={{
-                                                            width: '0px',
-                                                            height: '0px',
-                                                            overflow: 'hidden'
-                                                        }}/></label>
-                                                </div>
-
-
-                                            </div>
-
-                                        </Collapse>
-                                    </ListGroupItem>
-
-
-                                </ListGroup>
 
 
                             </div>

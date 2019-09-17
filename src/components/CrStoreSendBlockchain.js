@@ -980,8 +980,14 @@ class CrStoreSendBlockchain extends Component {
                                             _this.setState({dataControllerAccountVisible: !_this.state.dataControllerAccountVisible})
                                         }}><i
                                             className={_this.state.dataControllerAccountVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Data
-                                            Controller Account & wallet</ListGroupItemHeading>
+                                            Controller Wallet</ListGroupItemHeading>
                                         <Collapse isOpen={this.state.dataControllerAccountVisible}>
+
+                                            <small>
+                                            <p>Fairdrop account must be used. It can be created or imported via a JSON file containing the private key.</p>
+                                            <p>It is browser specific - on a different browser or computer you need to re-import it.</p>
+                                            <p>It has to be unlocked to be used.</p></small>
+
                                             <div className="mt-3 mb-3">
 
                                                 <div className="form-group"><label
@@ -1090,7 +1096,10 @@ class CrStoreSendBlockchain extends Component {
                                                 Configuration</ListGroupItemHeading>
 
                                             <Collapse isOpen={this.state.projectConfigurationVisible}>
+                                            <small>
+                                            <p>Load project configuration JSON file created in Editor window then encode JWT and send and sign a Consent to another Fairdrop user.</p>
 
+                                            </small>
                                                 <div>
 
                                                     <div className="mt-3 mb-3">

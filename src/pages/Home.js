@@ -70,32 +70,36 @@ class App extends Component {
                 <Navbar color="faded" className="" light expand="lg">
                     <div className="container-fluid">
 
-                        <Link className="navbar-brand" to="/"><img src={logo} alt={logo}
-                                                                   className="img-fluid"/></Link>
+                        <Link className="navbar-brand" to="/"><img src={logo} alt={logo} className="img-fluid"/></Link>
+                        
 
                         <Collapse isOpen={this.state.isOpen} navbar>
                             <Nav className="ml-auto" navbar>
                             </Nav>
                         </Collapse>
+                        
+                        <ButtonGroup>
+                                <Button active={this.state.activeMainTab === '1'} onClick={() => {
+                                    this.setState({activeMainTab: '1'});
+                                }} >Editor</Button>
+                                <Button active={this.state.activeMainTab === '2'} onClick={() => {
+                                    this.setState({activeMainTab: '2'});
+                                }} >Send & Sign </Button>
+                                <Button active={this.state.activeMainTab === '3'} onClick={() => {
+                                    this.setState({activeMainTab: '3'});
+                                }} >Received Receipts</Button>
+                        </ButtonGroup>
                     </div>
                 </Navbar>
 
+
                 <div className="container-fluid mainContent">
+
 
                     <div className="row">
                         <div className="col-md-12">
 
-                            <ButtonGroup className="mb-4">
-                                <Button active={this.state.activeMainTab === '1'} onClick={() => {
-                                    this.setState({activeMainTab: '1'});
-                                }}>Consent Receipt Editor &<br/> Viewer</Button>
-                                <Button active={this.state.activeMainTab === '2'} onClick={() => {
-                                    this.setState({activeMainTab: '2'});
-                                }}>Consent Receipt Storage & Sending &<br/> Blockchain signing (data controller / user)</Button>
-                                <Button active={this.state.activeMainTab === '3'} onClick={() => {
-                                    this.setState({activeMainTab: '3'});
-                                }}>Received Data Receipts<br/> (data principal / giver)</Button>
-                            </ButtonGroup>
+
 
                             {/*<Nav tabs className="mt-1 mb-4 mainNav">*/}
                             {/*    <NavItem>*/}
