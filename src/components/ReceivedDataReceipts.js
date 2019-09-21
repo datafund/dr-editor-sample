@@ -38,7 +38,7 @@ class ReceivedDataReceipts extends Component {
         this.state = {
 
             DataReceiptLib: new DataReceipt(),
-            consoleVisible: true,
+            consoleVisible: false,
             dataControllerAccountVisible: true,
 
             account: null,
@@ -599,39 +599,6 @@ class ReceivedDataReceipts extends Component {
 
                     <div className="col-md-8">
 
-                        <ListGroup className="mt-3 mb-3">
-                            <div className="row">
-                                <div className="col-md-12">
-                                    <ListGroupItem>
-                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
-                                            _this.setState({consoleVisible: !_this.state.consoleVisible})
-                                        }}><i
-                                            className={_this.state.consoleVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Console
-                                        </ListGroupItemHeading>
-
-                                        <Collapse isOpen={this.state.consoleVisible}>
-
-
-                                            <ul style={{
-                                                backgroundColor: '#242424',
-                                                maxHeight: '200px',
-                                                height: '200px',
-                                                overflowY: 'auto',
-                                                display: 'flex',
-                                                flexDirection: 'column-reverse',
-                                                paddingLeft: '0px'
-                                            }}>
-                                                <Console logs={_this.state.logs} variant="dark"/>
-                                            </ul>
-
-
-                                        </Collapse>
-
-                                    </ListGroupItem>
-                                </div>
-                            </div>
-                        </ListGroup>
-
                         <div className="row">
                             <div className="col-md-12 mt-5">
                                 <h4 style={{cursor: 'pointer'}} className="d-inline" onClick={(e) => _this.getReceivedMessages()}>
@@ -773,6 +740,38 @@ class ReceivedDataReceipts extends Component {
 
                         </div>
 
+                        <ListGroup className="mt-3 mb-3">
+                            <div className="row">
+                                <div className="col-md-12">
+                                    <ListGroupItem>
+                                        <ListGroupItemHeading className="m-0" onClick={(e) => {
+                                            _this.setState({consoleVisible: !_this.state.consoleVisible})
+                                        }}><i
+                                            className={_this.state.consoleVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Console
+                                        </ListGroupItemHeading>
+
+                                        <Collapse isOpen={this.state.consoleVisible}>
+
+
+                                            <ul style={{
+                                                backgroundColor: '#242424',
+                                                maxHeight: '200px',
+                                                height: '200px',
+                                                overflowY: 'auto',
+                                                display: 'flex',
+                                                flexDirection: 'column-reverse',
+                                                paddingLeft: '0px'
+                                            }}>
+                                                <Console logs={_this.state.logs} variant="dark"/>
+                                            </ul>
+
+
+                                        </Collapse>
+
+                                    </ListGroupItem>
+                                </div>
+                            </div>
+                        </ListGroup>
 
                     </div>
 
