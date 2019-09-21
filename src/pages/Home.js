@@ -66,8 +66,8 @@ class App extends Component {
 
         return (
             <div>
-
                 <Navbar color="faded" className="" light expand="lg">
+
                     <div className="container-fluid">
 
                         <Link className="navbar-brand" to="/"><img src={logo} alt={logo} className="img-fluid"/></Link>
@@ -77,18 +77,19 @@ class App extends Component {
                             <Nav className="ml-auto" navbar>
                             </Nav>
                         </Collapse>
-                        
+                    
                         <ButtonGroup>
-                                <Button active={this.state.activeMainTab === '1'} onClick={() => {
+                                <Button active={this.state.activeMainTab === '1'} title="Generate and view a Consent Receipt" onClick={() => {
                                     this.setState({activeMainTab: '1'});
                                 }} >Editor</Button>
-                                <Button active={this.state.activeMainTab === '2'} onClick={() => {
+                                <Button active={this.state.activeMainTab === '2'} title="Sign & send a Consent Receipt as Data controller" onClick={() => {
                                     this.setState({activeMainTab: '2'});
                                 }} >Send & Sign </Button>
-                                <Button active={this.state.activeMainTab === '3'} onClick={() => {
+                                <Button active={this.state.activeMainTab === '3'} title="Browse and sign Consent Receipts as Data principal" onClick={() => {
                                     this.setState({activeMainTab: '3'});
                                 }} >Received Receipts</Button>
                         </ButtonGroup>
+
                     </div>
                 </Navbar>
 
@@ -150,7 +151,8 @@ class App extends Component {
                     }
 
                 </div>
-
+                <div><small>Consent Receipt Generator and Viewer demo application is meant only for demonstration purposes - as a reference implementation of different modules - and is not suitable to be used in production environments.
+                        The modules are open sourced and free to use in your own configuration.</small></div>    
             </div>
         );
     }

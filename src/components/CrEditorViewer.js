@@ -893,7 +893,10 @@ class CrEditorViewer extends Component {
                                 foregroundStyle={{color: '#000000'}}
                                 message={loadingText}
                             >
-
+                            <small>
+                            <p>Consent Receipt Editor allows for editing of data in the Consent Receipt. For example, it could be used by the Data controller when constructing a proposal to send to a Data principal.</p>
+                            <p>The structure of the form bellow depends on JSON Schema, while the functionality depends on the UI Schema. Entered data is stored in FormData.</p>
+                            </small>
                                 <Form
                                     ref={(form) => {
                                         reactJsonSchemaForm = form;
@@ -913,7 +916,10 @@ class CrEditorViewer extends Component {
 
                         {_this.state.mode === 'viewer' &&
                         <div className="card card-body bg-light mb-5">
-
+                            <small>
+                            <p>Consent Receipt Viewer allows a read only view of the Consent Receipt. For example, it could be used to view details of a saved Consent Receipt.</p>
+                            <p>The aestethics are free to be customized for a particular use.</p>
+                            </small>
                             <h4 className="mt-1">Consent receipt viewer</h4>
 
                             <div className="mt-3">
