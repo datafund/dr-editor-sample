@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 /**
  * Datafund Consent generator & viewer
  * Licensed under the MIT license
@@ -7,7 +8,6 @@
 import React, {Component} from 'react';
 import {
     Collapse,
-    Navbar,
     NavItem,
     ListGroup,
     ListGroupItem,
@@ -31,7 +31,7 @@ import classnames from 'classnames';
 import fileDownload from 'js-file-download';
 import Loader from "react-loader-advanced";
 import config from "../projectConfiguration";
-import {ConsentViewer as ConsentViewer} from "@datafund/consent-viewer";
+import ConsentViewer from "@datafund/consent-viewer";
 import DataReceipt from "@datafund/data-receipt";
 
 
@@ -91,10 +91,6 @@ class CrEditorViewer extends Component {
 
     componentDidMount() {
         const _this = this;
-
-
-        //document.getElementsByClassName("mainContent")[0].classList.replace('container-fluid', 'container');
-
         console.log(DataReceipt);
 
         setTimeout(function () {
@@ -105,18 +101,15 @@ class CrEditorViewer extends Component {
     }
 
     generateUUID() {
-        const _this = this;
-
-        if (!_this.state.formData.consentReceiptID || _this.state.formData.consentReceiptID === '') {
-            _this.state.formData.consentReceiptID = uuidv4();
-            _this.forceUpdate();
+        if (!this.state.formData.consentReceiptID || this.state.formData.consentReceiptID === '') {
+            this.state.formData.consentReceiptID = uuidv4();
+            this.forceUpdate();
         }
     }
 
     readDefaultProperties() {
         const _this = this;
-
-        _this.setState({loadingInProgress: true});
+        this.setState({loadingInProgress: true});
 
         _.each(_this.state.defaultProperties, function (val, key) {
 
@@ -131,38 +124,28 @@ class CrEditorViewer extends Component {
             _this.forceUpdate();
             console.log("val ", val);
             console.log("key ", key);
-            console.log("_this.state.formData", _this.state.formData);
+            console.log("this.state.formData", _this.state.formData);
 
         });
-
-        _this.setState({loadingInProgress: false});
-        //_this.forceUpdate();
+        this.setState({loadingInProgress: false});
+        this.forceUpdate();
     }
 
     onFormDataChange(val) {
-        const _this = this;
         console.log("onFormDataChange", val);
-        //
-        _this.setState({
-            formData: val.formData
-        })
+        this.setState({ formData: val.formData });
     }
 
     onPrivateKeyChange(val) {
-        const _this = this;
         console.log("onChange", val);
-        //
-        _this.setState({
-            privateKey: val
-        });
+        this.setState({ privateKey: val });
     }
 
     onInputFileChange(e) {
         const _this = this;
-
         if (window.FileReader) {
 
-            _this.setState({loadingInProgress: true});
+            this.setState({loadingInProgress: true});
 
             let file = e.target.files[0]
             let reader = new FileReader();
@@ -191,18 +174,16 @@ class CrEditorViewer extends Component {
 
                     _this.setState({loadingInProgress: false});
                 }
-
-
                 reader.readAsDataURL(file);
                 console.log(reader);
                 console.log(file);
             } else {
-                _this.setState({loadingInProgress: false});
                 alert("Could not upload configuration because configuration file was not selected!");
             }
         } else {
             alert('Sorry, your browser doesn\'t support for preview');
         }
+        this.setState({loadingInProgress: false});
     }
 
 
@@ -210,22 +191,20 @@ class CrEditorViewer extends Component {
         const _this = this;
 
         Object.keys(obj).forEach(function (key) {
-            if (obj[key] && typeof obj[key] === 'object') _this.onClean(obj[key])
+            if (obj[key] && typeof obj[key] === 'object') this.onClean(obj[key])
             else if (obj[key] == null) delete obj[key]
         });
 
         console.log(obj);
         _this.state.cleanFormData = obj;
-        _this.forceUpdate();
+        this.forceUpdate();
     }
 
     generateJwtHS256() {
-        const _this = this;
+        this.onClean(this.state.formData);
 
-        _this.onClean(_this.state.formData);
-
-        let jwtToken = jwt.sign(_this.state.cleanFormData, _this.state.secret);
-        _this.setState({
+        let jwtToken = jwt.sign(this.state.cleanFormData, this.state.secret);
+        this.setState({
             jwtToken: jwtToken,
             jwtTokenEncodedVisible: true,
             secret: ''
@@ -234,48 +213,39 @@ class CrEditorViewer extends Component {
     }
 
     generateJwtRS256() {
-        const _this = this;
+        this.onClean(this.state.formData);
 
-        _this.onClean(_this.state.formData);
+        console.log("PRIVATE KEY: ", this.state.privateKey);
+        console.log(this.state.cleanFormData);
 
-        console.log("PRIVATE KEY: ", _this.state.privateKey);
-        console.log(_this.state.cleanFormData);
+        let jwtToken = jwt.sign(this.state.cleanFormData, this.state.privateKey, config.defaultProperties.tokenSigningOptions);
 
-
-        let jwtToken = jwt.sign(_this.state.cleanFormData, _this.state.privateKey, config.defaultProperties.tokenSigningOptions);
-
-        _this.setState({
+        this.setState({
             jwtToken: jwtToken,
             jwtTokenEncodedVisible: true,
         });
-
     }
 
     decodeJwt() {
-        const _this = this;
+        let decoded = jwt.decode(this.state.jwtToken, {complete: true});
 
-        let decoded = jwt.decode(_this.state.jwtToken, {complete: true});
-
-        _this.setState({
+        this.setState({
             jwtTokenDecodedVisible: true,
             jwtTokenDecoded: decoded
         });
     }
 
     verifyJwtHS256() {
-        const _this = this;
-        console.log("_this.state.formData.publicKey ", _this.state.formData.publicKey);
+        console.log("this.state.formData.publicKey ", this.state.formData.publicKey);
 
         let verifyOptions = {
             algorithm: "HS256"
         };
 
         try {
-            let legit = jwt.verify(_this.state.jwtToken, _this.state.secret, verifyOptions);
+            let legit = jwt.verify(this.state.jwtToken, this.state.secret, verifyOptions);
             console.log("LEGIT", legit);
-            _this.setState({
-                signature: legit
-            });
+            this.setState({ signature: legit });
             alert("Signature VALID!");
         } catch (e) {
             alert("Invalid signature!");
@@ -283,50 +253,35 @@ class CrEditorViewer extends Component {
     }
 
     verifyJwtRS256() {
-        const _this = this;
-
-        console.log("_this.state.formData.publicKey ", _this.state.formData.publicKey);
+        console.log("this.state.formData.publicKey ", this.state.formData.publicKey);
 
         let verifyOptions = config.defaultProperties.tokenSigningOptions;
         verifyOptions.algorithm = "RS256";
 
         try {
-            let legit = jwt.verify(_this.state.jwtToken, _this.state.formData.publicKey, verifyOptions);
+            let legit = jwt.verify(this.state.jwtToken, this.state.formData.publicKey, verifyOptions);
 
-            _this.setState({
-                signature: legit
-            });
+            this.setState({ signature: legit });
             alert("Signature VALID!");
         } catch (e) {
             alert("Invalid signature!");
         }
-
     }
 
     onSchemaChange(val) {
-        const _this = this;
         console.log(val);
-        _this.setState({
-            schema: val
-        });
+        this.setState({ schema: val });
     }
 
     onUiSchemaChange(val) {
-        const _this = this;
         console.log(val);
-        _this.setState({
-            uiSchema: val
-        });
+        this.setState({ uiSchema: val });
     }
 
     onDefaultPropertiesChange(val) {
-        const _this = this;
         console.log(val);
-        _this.setState({
-            defaultProperties: val
-        });
-
-        _this.readDefaultProperties();
+        this.setState({ defaultProperties: val });
+        this.readDefaultProperties();
     }
 
     // onFormDataChange(val) {
@@ -334,13 +289,11 @@ class CrEditorViewer extends Component {
     // }
 
     downloadProjectConfigFile() {
-        const _this = this;
-
         let data = {
-            "schema": _this.state.schema,
-            "uiSchema": _this.state.uiSchema,
-            "formData": _this.state.formData,
-            "defaultProperties": _this.state.defaultProperties
+            "schema": this.state.schema,
+            "uiSchema": this.state.uiSchema,
+            "formData": this.state.formData,
+            "defaultProperties": this.state.defaultProperties
         };
 
         console.log("data ->", data);
@@ -352,11 +305,9 @@ class CrEditorViewer extends Component {
     }
 
     downloadJwt() {
-        const _this = this;
+        let decoded = jwt.decode(this.state.jwtToken, {complete: true});
 
-        let decoded = jwt.decode(_this.state.jwtToken, {complete: true});
-
-        fileDownload(_this.state.jwtToken, "consent_receipt_" + decoded.payload.iat + '.jwt.cr');
+        fileDownload(this.state.jwtToken, "consent_receipt_" + decoded.payload.iat + '.jwt.cr');
     }
 
     render() {
@@ -374,9 +325,9 @@ class CrEditorViewer extends Component {
 
 <ListGroupItem>
     <ListGroupItemHeading className="m-0" onClick={(e) => {
-        _this.setState({projectConfigurationVisible: !_this.state.projectConfigurationVisible})
+        _this.setState({projectConfigurationVisible: !this.state.projectConfigurationVisible})
     }}><i
-        className={_this.state.projectConfigurationVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Project
+        className={this.state.projectConfigurationVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Project
         Configuration</ListGroupItemHeading>
 
     <Collapse isOpen={this.state.projectConfigurationVisible}>
@@ -422,10 +373,10 @@ class CrEditorViewer extends Component {
                 </TabPane>
                 <TabPane tabId="2">
 
-                    {!_.isEmpty(_this.state.defaultProperties, true) &&
+                    {!_.isEmpty(this.state.defaultProperties, true) &&
                     <div className="mt-3">
                         <JsonEditor
-                            value={_this.state.defaultProperties}
+                            value={this.state.defaultProperties}
                             onChange={_this.onDefaultPropertiesChange}
                         />
 
@@ -471,11 +422,11 @@ class CrEditorViewer extends Component {
 
                                     <ListGroupItem>
                                         <ListGroupItemHeading className="m-0" onClick={(e) => {
-                                            _this.setState({schemaVisible: !_this.state.schemaVisible})
+                                            _this.setState({schemaVisible: !this.state.schemaVisible})
                                         }}><i
-                                            className={_this.state.schemaVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> JSON
+                                            className={this.state.schemaVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> JSON
                                             Schema</ListGroupItemHeading>
-                                        <Collapse isOpen={_this.state.schemaVisible}>
+                                        <Collapse isOpen={this.state.schemaVisible}>
                                             <div>
 
                                             <small>
@@ -511,17 +462,17 @@ class CrEditorViewer extends Component {
 
                                                         <JSONPretty
                                                             className=""
-                                                            json={_this.state.schema}
+                                                            json={this.state.schema}
                                                             themeClassName="json-pretty"></JSONPretty>
 
 
                                                     </TabPane>
                                                     <TabPane tabId="2">
 
-                                                        {!_.isEmpty(_this.state.schema, true) &&
+                                                        {!_.isEmpty(this.state.schema, true) &&
                                                         <div>
                                                             <JsonEditor
-                                                                value={_this.state.schema}
+                                                                value={this.state.schema}
                                                                 onChange={_this.onSchemaChange}
                                                             />
 
@@ -543,9 +494,9 @@ class CrEditorViewer extends Component {
 
                                     <ListGroupItem>
                                         <ListGroupItemHeading className="m-0" onClick={(e) => {
-                                            _this.setState({uiSchemaVisible: !_this.state.uiSchemaVisible})
+                                            _this.setState({uiSchemaVisible: !this.state.uiSchemaVisible})
                                         }}><i
-                                            className={_this.state.uiSchemaVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> UI
+                                            className={this.state.uiSchemaVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> UI
                                             Schema</ListGroupItemHeading>
                                         <Collapse isOpen={this.state.uiSchemaVisible}>
                                             <div>
@@ -587,9 +538,9 @@ class CrEditorViewer extends Component {
                                                     </TabPane>
                                                     <TabPane tabId="2">
 
-                                                        {!_.isEmpty(_this.state.uiSchema, true) &&
+                                                        {!_.isEmpty(this.state.uiSchema, true) &&
                                                         <JsonEditor
-                                                            value={_this.state.uiSchema}
+                                                            value={this.state.uiSchema}
                                                             onChange={_this.onUiSchemaChange}
                                                         />
                                                         }
@@ -604,9 +555,9 @@ class CrEditorViewer extends Component {
 
                                     <ListGroupItem>
                                         <ListGroupItemHeading className="m-0" onClick={(e) => {
-                                            _this.setState({formDataVisible: !_this.state.formDataVisible})
+                                            _this.setState({formDataVisible: !this.state.formDataVisible})
                                         }}><i
-                                            className={_this.state.formDataVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Form
+                                            className={this.state.formDataVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Form
                                             Data</ListGroupItemHeading>
                                         <Collapse isOpen={this.state.formDataVisible}>
                                             <small><p>Form Data JSON contains all the actual data in the Consent Receipt. This is the part that gets saved into the Consent Receipt JSON Web Token and signed.</p>
@@ -630,19 +581,19 @@ class CrEditorViewer extends Component {
 
                                     <ListGroupItem>
                                         <ListGroupItemHeading className="m-0" onClick={(e) => {
-                                            _this.setState({encodeJwtVisible: !_this.state.encodeJwtVisible})
+                                            _this.setState({encodeJwtVisible: !this.state.encodeJwtVisible})
                                         }}><i
-                                            className={_this.state.encodeJwtVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Encode
+                                            className={this.state.encodeJwtVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Encode
                                             JWT</ListGroupItemHeading>
                                         <Collapse isOpen={this.state.encodeJwtVisible}>
                                             <div>
 
-                                                {_.isEmpty(_this.state.formData, true) &&
+                                                {_.isEmpty(this.state.formData, true) &&
                                                 <em><i className="fa fa-exclamation-triangle"></i> To Encode JWT
                                                     form Data must not be empty!</em>
                                                 }
 
-                                                {!_.isEmpty(_this.state.formData, true) &&
+                                                {!_.isEmpty(this.state.formData, true) &&
                                                 <div>
                                                     <h5 className="mt-4">Encode</h5>
                                                     <Nav tabs>
@@ -681,12 +632,12 @@ class CrEditorViewer extends Component {
                                                                     onChange={e => {
                                                                         _this.onPrivateKeyChange(e.target.value)
                                                                     }}
-                                                                    defaultValue={_this.state.privateKey}></textarea>
+                                                                    defaultValue={this.state.privateKey}></textarea>
                                                             </div>
 
                                                             <a className="btn btn-success text-white mt-3 mb-3"
                                                                onClick={(e) => {
-                                                                   if (_this.state.privateKey === '') {
+                                                                   if (this.state.privateKey === '') {
                                                                        alert("Valid private key is required!");
                                                                        return;
                                                                    }
@@ -711,7 +662,7 @@ class CrEditorViewer extends Component {
 
                                                             <a className="btn btn-success text-white mt-3 mb-3"
                                                                onClick={(e) => {
-                                                                   if (_this.state.secret === '') {
+                                                                   if (this.state.secret === '') {
                                                                        alert("256 bit secret string is required!");
                                                                        return;
                                                                    }
@@ -729,13 +680,13 @@ class CrEditorViewer extends Component {
                                     </ListGroupItem>
 
                                     <ListGroupItem
-                                        className={_.isEmpty(_this.state.jwtToken, true) ? "disabled" : ""}>
+                                        className={_.isEmpty(this.state.jwtToken, true) ? "disabled" : ""}>
                                         <ListGroupItemHeading className="m-0" onClick={(e) => {
-                                            _this.setState({jwtTokenEncodedVisible: !_this.state.jwtTokenEncodedVisible})
+                                            _this.setState({jwtTokenEncodedVisible: !this.state.jwtTokenEncodedVisible})
                                         }}><i
-                                            className={_this.state.jwtTokenEncodedVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Encoded
+                                            className={this.state.jwtTokenEncodedVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Encoded
                                             JWT</ListGroupItemHeading>
-                                        {!_.isEmpty(_this.state.jwtToken, true) &&
+                                        {!_.isEmpty(this.state.jwtToken, true) &&
                                         <Collapse isOpen={this.state.jwtTokenEncodedVisible}>
                                             <div>
 
@@ -793,10 +744,10 @@ class CrEditorViewer extends Component {
                                                             placeholder="insert private key"
                                                             rows={10}
                                                             onChange={e => {
-                                                                _this.state.formData.publicKey = e.target.value;
+                                                                this.state.formData.publicKey = e.target.value;
                                                                 _this.forceUpdate()
                                                             }}
-                                                            defaultValue={_this.state.formData.publicKey}></textarea>
+                                                            defaultValue={this.state.formData.publicKey}></textarea>
                                                         </div>
 
                                                         <a className="btn btn-success text-white mt-3"
@@ -833,7 +784,7 @@ class CrEditorViewer extends Component {
                                                     _this.decodeJwt()
                                                 }}><i className="fas fa-unlock"></i> Decode JWT</a><br/>
 
-                                                {/*{!_.isEmpty(_this.state.signature, true) &&*/}
+                                                {/*{!_.isEmpty(this.state.signature, true) &&*/}
                                                 {/*<JSONPretty*/}
                                                 {/*    className="p-2 mt-3"*/}
                                                 {/*    json={this.state.signature}*/}
@@ -846,13 +797,13 @@ class CrEditorViewer extends Component {
                                     </ListGroupItem>
 
                                     <ListGroupItem
-                                        className={_.isEmpty(_this.state.jwtTokenDecoded, true) ? "disabled" : ""}>
+                                        className={_.isEmpty(this.state.jwtTokenDecoded, true) ? "disabled" : ""}>
                                         <ListGroupItemHeading className="m-0" onClick={(e) => {
-                                            _this.setState({jwtTokenDecodedVisible: !_this.state.jwtTokenDecodedVisible})
+                                            _this.setState({jwtTokenDecodedVisible: !this.state.jwtTokenDecodedVisible})
                                         }}><i
-                                            className={_this.state.jwtTokenDecodedVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Decoded
+                                            className={this.state.jwtTokenDecodedVisible ? "fas text-muted fa-minus-square" : "fas text-muted fa-plus-square"}></i> Decoded
                                             JWT</ListGroupItemHeading>
-                                        {!_.isEmpty(_this.state.jwtTokenDecoded, true) &&
+                                        {!_.isEmpty(this.state.jwtTokenDecoded, true) &&
                                         <Collapse isOpen={this.state.jwtTokenDecodedVisible}>
                                             <div>
                                                 <JSONPretty
@@ -883,11 +834,11 @@ class CrEditorViewer extends Component {
                                     onClick={e => this.setState({mode: 'viewer'})}>CR Viewer</Button>
                         </ButtonGroup>
 
-                        {_this.state.mode === 'editor' &&
+                        {this.state.mode === 'editor' &&
                         <div className="card card-body bg-light mb-5">
 
                             <Loader
-                                show={_this.state.loadingInProgress}
+                                show={this.state.loadingInProgress}
                                 contentBlur={1}
                                 backgroundStyle={{backgroundColor: 'rgba(255,255,255,0.6)'}}
                                 foregroundStyle={{color: '#000000'}}
@@ -901,9 +852,9 @@ class CrEditorViewer extends Component {
                                     ref={(form) => {
                                         reactJsonSchemaForm = form;
                                     }}
-                                    schema={_this.state.schema}
-                                    formData={_this.state.formData}
-                                    uiSchema={_this.state.uiSchema}
+                                    schema={this.state.schema}
+                                    formData={this.state.formData}
+                                    uiSchema={this.state.uiSchema}
                                     onChange={_this.onFormDataChange}
                                     onError={log("errors")}>
                                     <br/> {/*<br/> workaround to hide submit button*/}
@@ -914,7 +865,7 @@ class CrEditorViewer extends Component {
                         </div>
                         }
 
-                        {_this.state.mode === 'viewer' &&
+                        {this.state.mode === 'viewer' &&
                         <div className="card card-body bg-light mb-5">
                             <small>
                             <p>Consent Receipt Viewer allows a read only view of the Consent Receipt. For example, it could be used to view details of a saved Consent Receipt.</p>
@@ -930,7 +881,7 @@ class CrEditorViewer extends Component {
                             {/*    <JsonTable json={this.state.jwtTokenDecoded}/>*/}
                             {/*</div>*/}
 
-                            {!_.isEmpty(_this.state.jwtTokenDecoded, true) &&
+                            {!_.isEmpty(this.state.jwtTokenDecoded, true) &&
                             <JSONPretty
                                 className="p-2 mt-3"
                                 json={this.state.jwtTokenDecoded}

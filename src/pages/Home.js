@@ -8,23 +8,23 @@ import React, {Component} from 'react';
 import {
     Collapse,
     Navbar,
-    NavItem,
     Nav,
-    NavLink, ButtonGroup, Button
-} from 'reactstrap'
+    ButtonGroup, 
+    Button
+} from 'reactstrap';
 
 import {Link} from 'react-router-dom'
 import logo from '../images/logo_black_alt.svg';
-import classnames from 'classnames';
+//import classnames from 'classnames';
 import DataReceipt from "@datafund/data-receipt";
 import CrEditorViewer from "../components/CrEditorViewer";
 import CrStoreSendBlockchain from "../components/CrStoreSendBlockchain";
 import ReceivedDataReceipts from "../components/ReceivedDataReceipts";
-import FDS from 'fds.js';
+//import FDS from 'fds.js';
 
-const log = (type) => console.log.bind(console, type);
+//const log = (type) => console.log.bind(console, type);
 
-
+/*
 window.FDS = new FDS({
     swarmGateway: 'https://swarm.fairdatasociety.org',
     ethGateway: 'https://geth-noordung.fairdatasociety.org',
@@ -39,40 +39,30 @@ window.FDS = new FDS({
     },
     // multibox extension
     applicationDomain: "/shared/consents/"
-});
+});*/
 
 class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-
             activeMainTab: '1',
-
         };
     }
 
     componentDidMount() {
-        const _this = this;
-
-
         console.log(DataReceipt);
-
-
     }
 
     render() {
         const _this = this;
-        const loadingText = <span><i className="mdi mdi-spin mdi-loading"></i> Loading ...</span>;
+        //const loadingText = <span><i className="mdi mdi-spin mdi-loading"></i> Loading ...</span>;
 
         return (
             <div>
                 <Navbar color="faded" className="" light expand="lg">
 
                     <div className="container-fluid">
-
                         <Link className="navbar-brand" to="/"><img src={logo} alt={logo} className="img-fluid"/></Link>
-                        
-
                         <Collapse isOpen={this.state.isOpen} navbar>
                             <Nav className="ml-auto" navbar>
                             </Nav>
@@ -96,48 +86,6 @@ class App extends Component {
 
                 <div className="container-fluid mainContent">
 
-
-                    <div className="row">
-                        <div className="col-md-12">
-
-
-
-                            {/*<Nav tabs className="mt-1 mb-4 mainNav">*/}
-                            {/*    <NavItem>*/}
-                            {/*        <NavLink*/}
-                            {/*            className={classnames({active: this.state.activeMainTab === '1'})}*/}
-                            {/*            onClick={() => {*/}
-                            {/*                this.setState({activeMainTab: '1'});*/}
-                            {/*            }}>*/}
-                            {/*            Consent Receipt Editor & Viewer*/}
-                            {/*        </NavLink>*/}
-                            {/*    </NavItem>*/}
-                            {/*    <NavItem>*/}
-                            {/*        <NavLink*/}
-                            {/*            className={classnames({active: this.state.activeMainTab === '2'})}*/}
-                            {/*            onClick={() => {*/}
-                            {/*                this.setState({activeMainTab: '2'});*/}
-                            {/*            }}>*/}
-
-                            {/*            Consent Receipt Storage & Sending & Blockchain signing (data controller / user)*/}
-                            {/*        </NavLink>*/}
-                            {/*    </NavItem>*/}
-                            {/*    <NavItem>*/}
-                            {/*        <NavLink*/}
-                            {/*            className={classnames({active: this.state.activeMainTab === '3'})}*/}
-                            {/*            onClick={() => {*/}
-                            {/*                this.setState({activeMainTab: '3'});*/}
-                            {/*            }}>*/}
-
-                            {/*            Received Data Receipts (data principal / giver)*/}
-                            {/*        </NavLink>*/}
-                            {/*    </NavItem>*/}
-                            {/*</Nav>*/}
-
-
-                        </div>
-                    </div>
-
                     {_this.state.activeMainTab === '1' &&
                     <CrEditorViewer/>
                     }
@@ -159,3 +107,7 @@ class App extends Component {
 }
 
 export default App;
+
+// "@datafund/data-receipt": git+https://https://github.com/datafund/datareceipt.js.git
+// "fds.js": git+https://github.com/fairDataSociety/fds.js.git
+// "@datafund/data-receipt": "^0.1.25",

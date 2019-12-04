@@ -1,7 +1,8 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 /**
  * Datafund Consent generator & viewer
  * Licensed under the MIT license
- * Created by Markus Zevnik, Tadej Fius, �rt Ahlin
+ * Created by Markus Zevnik, Tadej Fius, Črt Ahlin
  */
 
 import React, {Component} from 'react';
@@ -142,99 +143,62 @@ class ReceivedDataReceipts extends Component {
                 // console.info("-----> account unlocked: ");
                 // console.info(account);
                 // console.log("------------ \n\n");
-
                 toast.success("Account unlocked!");
-
                 _this.setAccount(account);
 
                 CM = await _this.state.DataReceiptLib.getConsentManager();
                 console.log(CM);
-
             }
 
         } catch (err) {
             console.error(err);
-
             toast.error("Error: " + err);
-
-            _this.setState({
-                loadingInProgress: false
-            });
         }
+        _this.setState({loadingInProgress: false});
     }
 
     async setAccount(acc) {
-        const _this = this;
-
         await this.setState({account: acc});
 
-
-        _this.setState({consentManager: new _this.state.DataReceiptLib.getConsentManager()});
-
+        var lib = await this.state.DataReceiptLib;
         // console.log("DataReceiptLib ", _this.state.DataReceiptLib);
-
-
-        await this.updateMultibox(acc);
-        await this.checkApllicationDomain(acc);
+        await lib.getMultiboxData();
         await this.getBalance(acc);
 
-        console.log(acc);
-
-
-        await _this.getReceivedMessages();
-
-        await _this.setState({
+        await this.setState({
             loadingInProgress: false
         });
+
+        await this.getReceivedMessages();
     }
 
     async updateMultibox(account) {
         let multiboxData = await account.Mail.Multibox.traverseMultibox(account, account.subdomain);
         await this.setState({multiboxData: multiboxData});
-
-        console.log(multiboxData);
-    }
-
-    async checkApllicationDomain(account) {
-        //let applicationNodeExists = await account.Mail.Multibox.createPath(account, this.props.applicationDomain, this.state.multiboxData.id);
-
-        let applicationNodeExists = await account.Mail.Multibox.createPath(account, window.FDS.applicationDomain, this.state.multiboxData.id);
-        if (applicationNodeExists > 0) {
-            await this.updateMultibox(account);
-        }
+        //console.log(multiboxData);
     }
 
     async getBalance(account) {
-        const _this = this;
         let b = await account.getBalance();
-
         console.log("balance: ", b);
-
-        _this.setState({
+        this.setState({
             balance: account.Tx.web3.utils.fromWei(b, 'ether')
         });
     }
 
     async importAccount(result, filename) {
-
         const _this = this;
-
         try {
             let account = await _this.state.DataReceiptLib.restoreAccount(result, filename, _this.state.fairdropAccountPassword);
-
             //console.warn("TODO: return result!")
-
         } catch (err) {
             console.error(err);
         }
-
     }
 
     exportWallet() {
         const _this = this;
-
         console.log(_this.state.account);
-
         _this.state.account.saveBackupAs();
     }
 
@@ -247,15 +211,13 @@ class ReceivedDataReceipts extends Component {
 
         _this.setState({receiving: true});
 
-        let messages = await _this.state.account.messages('received', window.FDS.applicationDomain);
+        let messages = await _this.state.account.messages('received', this.state.DataReceiptLib.FDS.applicationDomain);
         let reader = new FileReader();
 
         await _this.setState({receivedMessages: []});
         await _this.state.DataReceiptLib.asyncForEach(messages, async (message) => {
 
             try {
-                // console.log(messages);
-                // console.log(message);
                 let file = await message.getFile(); // what if this fails?
                 let isCRJWT = await _this.state.DataReceiptLib.IsConsentRecepit(file.name);
                 let id = message.hash.address;
@@ -291,36 +253,26 @@ class ReceivedDataReceipts extends Component {
 
     async addReceived(msg) {
         const _this = this;
-
         // TODO!
         try {
             msg.decodedToken = await _this.state.DataReceiptLib.decode(msg.data); //, { complete: true });
-
             if (msg.decodedToken !== null) {
                 msg.verified = await _this.state.DataReceiptLib.verify(msg.decodedToken.payload.publicKey, msg.data);
             }
-
         } catch (err) {
             console.error(err);
         }
-
         // console.log("SWARM HASH: ", msg.message.hash.address);
-
         try {
             let consents = await CM.getConsentsFor("0x" + msg.message.hash.address);
-
             if (consents && consents.length > 0) {
                 // TODO: verify only last one in the array
                 await _this.checkConsent([consents[consents.length - 1]], msg);
             }
-
         } catch (err) {
             console.error(err);
         }
-
-
         await _this.setState({receivedMessages: [msg, ..._this.state.receivedMessages]});
-
     }
 
     async checkConsent(consentAddresses, msg) {
@@ -331,16 +283,13 @@ class ReceivedDataReceipts extends Component {
             try {
                 console.log("consentAddress ", consentAddress);
                 let consent = await _this.state.DataReceiptLib.getConsent(consentAddress);
-
                 console.log("consent: ", consent);
 
                 let us, ss, s, v, updated, status;
-
                 us = await consent.isUserSigned();
                 ss = await consent.isSubjectSigned();
                 s = await consent.isSigned();
                 v = await consent.isValid();
-
                 // if updated anything else than 0x0000000000000000000000000000000000000000
                 // then consent was updated with another consent
                 updated = await consent.isUpdatedWith();
@@ -349,19 +298,13 @@ class ReceivedDataReceipts extends Component {
                 // 2 - expired
                 // 3 - revoked
                 status = await consent.status();
-
                 // console.log(consentAddress, 'signed (subject, user, both, valid)', ss, us, s, v);
                 // console.log('status', status, ' updated', updated);
-
                 let consentStatus = {'us': us, 'ss': ss, 's': s, 'v': v, 'updated': updated, 'status': status};
                 msg.consentStatus = consentStatus;
-
                 //return msg
-
             } catch (e) {
-
                 console.log("error ", e)
-
             }
         });
     }
@@ -382,6 +325,8 @@ class ReceivedDataReceipts extends Component {
                 break;
             case 3:
                 statusLabel = 'revoked';
+                break;
+            default: statusLabel = 'unknown';
                 break;
         }
 
@@ -405,9 +350,7 @@ class ReceivedDataReceipts extends Component {
     toggleConsentDetailsModal() {
         const _this = this;
 
-        _this.setState({
-            showConsentDetailsModal: !_this.state.showConsentDetailsModal
-        });
+        _this.setState({ showConsentDetailsModal: !_this.state.showConsentDetailsModal });
 
         setTimeout(function () {
             if (!_this.state.showConsentDetailsModal) {
@@ -416,7 +359,7 @@ class ReceivedDataReceipts extends Component {
                     typeOfMessageInModal: null
                 });
             }
-        }, 10)
+        }, 1)
 
     }
 
@@ -430,9 +373,18 @@ class ReceivedDataReceipts extends Component {
             consent = await _this.state.DataReceiptLib.getConsent(consents[consents.length - 1]);
         }
 
-        let ss = await consent.isSubjectSigned();
-        console.log("ss ", ss);
-        await consent.signSubject();
+        try
+        {
+            let ss = await consent.isSubjectSigned();
+            console.log("ss ", ss);
+            await consent.signSubject();
+            toast.success("signed");
+        }
+        catch(err)
+        {
+            toast.error(err);
+        }
+        _this.toggleConsentDetailsModal();
     }
 
     async crDetailsModalRevokeConsent() {
@@ -445,8 +397,16 @@ class ReceivedDataReceipts extends Component {
             consent = await _this.state.DataReceiptLib.getConsent(consents[consents.length - 1]);
         }
 
-        await consent.revokeConsent();
-
+        try
+        {
+            await consent.revokeConsent();
+            toast.success("revoked");
+        }
+        catch(err)
+        {
+            toast.error(err);
+        }
+        _this.toggleConsentDetailsModal();
     }
 
     componentDidMount() {

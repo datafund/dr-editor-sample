@@ -1,7 +1,8 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 /**
  * Datafund Consent generator & viewer
  * Licensed under the MIT license
- * Created by Markus Zevnik, Tadej Fius, �rt Ahlin
+ * Created by Markus Zevnik, Tadej Fius, Črt Ahlin
  */
 
 import React, {Component} from 'react';
@@ -18,21 +19,18 @@ import JSONPretty from "react-json-pretty";
 import _ from "lodash";
 import jwt from "jsonwebtoken";
 import config from "../projectConfiguration";
-import {ConsentViewer as ConsentViewer} from "@datafund/consent-viewer";
+import {ConsentViewer} from "@datafund/consent-viewer";
 import DataReceipt from "@datafund/data-receipt";
 import {Hook, Console, Decode} from 'console-feed'
 import ReactTable from "react-table";
-import {CSVLink, CSVDownload} from "react-csv";
+import {CSVLink } from "react-csv";
 import Loader from "react-loader-advanced";
 import QRCode from 'qrcode.react';
 import {ToastContainer, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const log = (type) => console.log.bind(console, type);
+//const log = (type) => console.log.bind(console, type);
 let importWallet;
-
-let CM = null;
-
 
 class CrStoreSendBlockchain extends Component {
     constructor(props) {
@@ -43,7 +41,6 @@ class CrStoreSendBlockchain extends Component {
             consoleVisible: false,
 
             account: null,
-            consentManager: null,
             recipient: '',
             recipientAccountValid: false,
 
@@ -214,8 +211,6 @@ class CrStoreSendBlockchain extends Component {
 
             if (file) {
                 reader.onload = function (r) {
-
-
                     console.log(r.target.result);
                     console.log(r.target.result.substr(29));
                     console.log(window.atob(r.target.result.substr(29)));
@@ -264,7 +259,7 @@ class CrStoreSendBlockchain extends Component {
         });
 
         try {
-            let account = await _this.state.DataReceiptLib.createAccount(_this.state.fairdropAccountName.toLowerCase(), _this.state.fairdropAccountPassword, function (t) {
+                let account = await _this.state.DataReceiptLib.createAccount(_this.state.fairdropAccountName.toLowerCase(), _this.state.fairdropAccountPassword, function (t) {
                 console.error(t);
             }, function (t) {
                 console.log(t);
@@ -293,7 +288,6 @@ class CrStoreSendBlockchain extends Component {
             return
         }
 
-
         _this.setState({
             loadingInProgress: true
         });
@@ -302,15 +296,7 @@ class CrStoreSendBlockchain extends Component {
             let account = await _this.state.DataReceiptLib.unlockAccount(_this.state.fairdropAccountName.toLowerCase(), _this.state.fairdropAccountPassword);
 
             if (account) {
-                // console.info("-----> account unlocked: ");
-                // console.info(account);
-                // console.log("------------ \n\n");
-
                 toast.success("Account unlocked!");
-
-                CM = await _this.state.DataReceiptLib.getConsentManager();
-                console.log(CM);
-
                 await _this.setAccount(account);
             }
 
@@ -326,29 +312,19 @@ class CrStoreSendBlockchain extends Component {
     }
 
     async setAccount(acc) {
-        const _this = this;
-
         await this.setState({account: acc});
 
-
-        _this.setState({consentManager: new _this.state.DataReceiptLib.getConsentManager()});
-
+        var lib = await this.state.DataReceiptLib;
         // console.log("DataReceiptLib ", _this.state.DataReceiptLib);
-
-
-        await this.updateMultibox(acc);
-        await this.checkApllicationDomain(acc);
+        await lib.getMultiboxData();
         await this.getBalance(acc);
 
-        console.log('account: ', acc);
-
-
-        await _this.getSentMessages();
-        await _this.getReceivedMessages();
-
-        await _this.setState({
+        await this.setState({
             loadingInProgress: false
         });
+
+        await this.getSentMessages();
+        await this.getReceivedMessages();
     }
 
     async updateMultibox(account) {
@@ -358,24 +334,10 @@ class CrStoreSendBlockchain extends Component {
         console.log(multiboxData);
     }
 
-    async checkApllicationDomain(account) {
-        //let applicationNodeExists = await account.Mail.Multibox.createPath(account, this.props.applicationDomain, this.state.multiboxData.id);
-
-        let applicationNodeExists = await account.Mail.Multibox.createPath(account, window.FDS.applicationDomain, this.state.multiboxData.id);
-        if (applicationNodeExists > 0) {
-            await this.updateMultibox(account);
-        }
-    }
-
     async getBalance(account) {
-        const _this = this;
-
         let b = await account.getBalance();
-
         console.log("balance: ", b);
-
-        console.log(account.Tx.web3.utils.fromWei(b, 'ether'));
-        _this.setState({
+        this.setState({
             balance: account.Tx.web3.utils.fromWei(b, 'ether')
         });
     }
@@ -386,51 +348,42 @@ class CrStoreSendBlockchain extends Component {
 
         try {
             let account = await _this.state.DataReceiptLib.restoreAccount(result, filename, _this.state.fairdropAccountPassword);
-
             //console.warn("TODO: return result!")
 
         } catch (err) {
             console.error(err);
         }
-
     }
 
     async checkContact() {
-        const _this = this;
-
         try {
-            await _this.state.account.lookupContact(_this.state.recipient, console.log, console.log, console.log);
-            console.log("address: " + await _this.state.account.getAddressOf(_this.state.recipient));
-            _this.setState({
+            await this.state.account.lookupContact(this.state.recipient, console.log, console.log, console.log);
+
+            console.log("address: " + await this.state.DataReceiptLib.getAddressOf(this.state.recipient));
+            this.setState({
                 recipientAccountValid: true
             });
 
             toast.success("Recipient is valid!");
         } catch (err) {
             console.error(`>>>>>>> ${err}`, err);
-            _this.setState({
+            this.setState({
                 recipientAccountValid: false
             });
-
             toast.error("Error: " + err);
         }
     }
 
     exportWallet() {
-        const _this = this;
-
-        console.log(_this.state.account);
-
-        _this.state.account.saveBackupAs();
+        console.log(this.state.account);
+        this.state.account.saveBackupAs();
     }
 
     readDefaultProperties() {
         const _this = this;
-
         _this.setState({loadingInProgress: true});
 
         _.each(_this.state.defaultProperties, function (val, key) {
-
             if (_this.state.schema.properties[key]) {
                 if (_this.state.schema.properties[key].default) {
                     delete _this.state.schema.properties[key].default;
@@ -439,35 +392,29 @@ class CrStoreSendBlockchain extends Component {
                 _this.state.formData[key] = val;
             }
 
-            _this.forceUpdate();
+            //_this.forceUpdate();
             console.log("val ", val);
             console.log("key ", key);
             console.log("_this.state.formData", _this.state.formData);
-
         });
-
+        _this.forceUpdate();
         _this.setState({loadingInProgress: false});
-        //_this.forceUpdate();
     }
 
     async sendTokenToDP() {
-        const _this = this;
-
-        if (!_this.state.account) {
+        if (!this.state.account) {
             alert("You need to be logged into yout account to send messages!");
-            _this.setState({
-                dataControllerAccountVisible: true
-            });
-            return
+            this.setState({dataControllerAccountVisible: true });
+            return;
         }
 
-        if (_this.state.jwtToken === '') {
+        if (this.state.jwtToken === '') {
             alert("You need to create JWT token first!");
-            _this.setState({
+            this.setState({
                 projectConfigurationVisible: true,
                 encodeJwtVisible: true
             });
-            return
+            return;
         }
         // } else {
         //     if(!_this.verifyJwtRS256()) {
@@ -476,62 +423,45 @@ class CrStoreSendBlockchain extends Component {
         //     }
         // }
 
-        if (_this.state.recipient === '') {
+        if (this.state.recipient === '') {
             alert("Receiver's account name should not be empty!");
-            _this.setState({
-                sendCRVisible: true
-            });
-            return
+            this.setState({ sendCRVisible: true });
+            return;
         }
 
-        if(!_this.state.recipientAccountValid) {
+        if(!this.state.recipientAccountValid) {
             alert("Receiver's account is not valid!");
-            return
+            return;
         }
 
-        _this.setState({
-            loadingInProgress: true
-        });
-
+        this.setState({ loadingInProgress: true });
         window.scrollTo(0, 0);
 
-        await _this.state.DataReceiptLib.sendContents(_this.state.account, _this.state.recipient, _this.state.jwtToken,
-            (output) => {
-                console.log(output)
-            },
-            (results) => {
-                console.log(results)
-            });
+        await this.state.DataReceiptLib.sendContents(this.state.account, this.state.recipient, 
+            this.state.DataReceiptLib.FDS.applicationDomain,
+            this.state.jwtToken,
+            (output) => { console.log(output) },
+            (results) => { console.log(results) });
 
-        await _this.setState({
-            loadingInProgress: false
-        });
-
+        await this.setState({ loadingInProgress: false });
         await toast.success("Token sent!");
-
-        await _this.getSentMessages();
+        await this.getSentMessages();
     }
 
     async blockchainSignAndSendTokenToDP() {
-        const _this = this;
-
-
-
-        if (!_this.state.account) {
+        if (!this.state.account) {
             alert("You need to be logged into yout account to send messages!");
-            _this.setState({
-                dataControllerAccountVisible: true
-            });
-            return
+            this.setState({ dataControllerAccountVisible: true });
+            return;
         }
 
-        if (_this.state.jwtToken === '') {
+        if (this.state.jwtToken === '') {
             alert("You need to create JWT token first!");
-            _this.setState({
+            this.setState({
                 projectConfigurationVisible: true,
                 encodeJwtVisible: true
             });
-            return
+            return;
         }
         // } else {
         //     if(!_this.verifyJwtRS256()) {
@@ -540,72 +470,72 @@ class CrStoreSendBlockchain extends Component {
         //     }
         // }
 
-        if (_this.state.recipient === '') {
+        if (this.state.recipient === '') {
             alert("Receiver's account name should not be empty!");
-            _this.setState({
-                sendCRVisible: true
-            });
-            return
+            this.setState({ sendCRVisible: true });
+            return;
         }
 
-        if(!_this.state.recipientAccountValid) {
+        if(!this.state.recipientAccountValid) {
             alert("Receiver's account is not valid!");
-            return
+            return;
         }
 
-        _this.setState({
-            loadingInProgress: true
-        });
+        this.setState({ loadingInProgress: true });
 
         window.scrollTo(0, 0);
 
-        let userAddress = _this.state.account.address;
-        let subjectAddress = await _this.state.DataReceiptLib.account.getAddressOf(_this.state.recipient);
-        let swarmHash = await _this.state.DataReceiptLib.sendDataReceipt(_this.state.jwtToken, _this.state.recipient, (error) => {
+        var lib = this.state.DataReceiptLib;
+
+        let userAddress = this.state.account.address;
+        let subjectAddress = await lib.getAddressOf(this.state.recipient);
+        let swarmHash = await lib.sendDataReceipt(this.state.jwtToken, this.state.recipient, (error) => {
                 console.error(error)
             },
             (results) => {
                 console.log(results)
             });
 
-        console.log("User   :" + userAddress);
-        console.log("Subject:" + subjectAddress);
+        console.log("SwarmHash:",  swarmHash)    
+        console.log("User     :" + userAddress);
+        console.log("Subject  :" + subjectAddress);
 
+        let CM = await lib.getConsentManager(); 
         let tx = await CM.createConsent(userAddress, subjectAddress, "0x" + swarmHash);
         console.log("transaction finished", tx); // transaction finished
 
         let cf = await CM.getConsentsFor("0x" + swarmHash);
         console.log("cf ", cf);
-        let consent = await _this.state.DataReceiptLib.getConsent(cf[cf.length - 1]);
+        //try
+        {
+            let consent = await lib.getConsent(cf[cf.length - 1]);
+            console.log("consent ", consent);
+            debugger;    
+            var signed = await consent.signUser();
+            console.log("consent ", signed);
+        } 
+        /*catch(e)
+        {
+            console.log(e);
+        }*/
 
-        await consent.signUser();
-
-        console.log("consent ", consent);
-
-        await _this.setState({
-            loadingInProgress: false
-        });
-
+        await this.setState({ loadingInProgress: false });
         await toast.success("Token sent & transaction finished!");
-
-        await _this.getSentMessages();
-        // TODO: auto sign consent
-
+        await this.getSentMessages();
     }
 
     async getSentMessages() {
         const _this = this;
+        if (this.state.receivingSent) return;
+        if (this.state.account === null) return;
 
-        if (_this.state.receivingSent) return;
-        if (_this.state.account === null) return;
+        this.setState({receivingSent: true});
 
-        _this.setState({receivingSent: true});
-
-        let messages = await _this.state.account.messages('sent', window.FDS.applicationDomain);
+        let messages = await this.state.account.messages('sent', this.state.DataReceiptLib.FDS.applicationDomain);
         let reader = new FileReader();
 
-        await _this.setState({sentMessages: []});
-        await _this.state.DataReceiptLib.asyncForEach(messages, async (message) => {
+        await this.setState({sentMessages: []});
+        await this.state.DataReceiptLib.asyncForEach(messages, async (message) => {
 
             try {
                 // console.log(messages);
@@ -614,7 +544,7 @@ class CrStoreSendBlockchain extends Component {
                 let isCRJWT = await _this.state.DataReceiptLib.IsConsentRecepit(file.name);
                 let id = message.hash.address;
 
-                if (!await _this.findReceived(id)) {
+                if (!await this.findReceived(id)) {
                     reader.onload = function (e) {
                         //let content = Helpers.ExtractMessage(reader.result);
                         _this.addSent({
@@ -628,7 +558,7 @@ class CrStoreSendBlockchain extends Component {
                         });
                         //console.log("reading", message);
                     }
-                    await reader.readAsText(await this.state.account.receive(message));
+                    await reader.readAsText(await _this.state.account.receive(message));
                 }
 
             } catch (err) {
@@ -637,7 +567,7 @@ class CrStoreSendBlockchain extends Component {
         });
 
 
-        await this.setState({receivingSent: false});
+        _this.setState({receivingSent: false});
     }
 
 
@@ -649,7 +579,7 @@ class CrStoreSendBlockchain extends Component {
 
         _this.setState({receiving: true});
 
-        let messages = await _this.state.account.messages('received', window.FDS.applicationDomain);
+        let messages = await _this.state.account.messages('received', this.state.DataReceiptLib.FDS.applicationDomain);
         let reader = new FileReader();
 
         await _this.setState({receivedMessages: []});
@@ -701,28 +631,21 @@ class CrStoreSendBlockchain extends Component {
             if (msg.decodedToken !== null) {
                 msg.verified = await _this.state.DataReceiptLib.verify(msg.decodedToken.payload.publicKey, msg.data);
             }
-
         } catch (err) {
             console.error(err);
         }
-
-        // console.log("SWARM HASH: ", msg.message.hash.address);
 
         try {
+            var lib = _this.state.DataReceiptLib;
+            let CM = await lib.getConsentManager(); 
             let consents = await CM.getConsentsFor("0x" + msg.message.hash.address);
-
-            if (consents && consents.length > 0) {
-                // TODO: verify only last one in the array
+            if (consents && consents.length > 0) { // TODO: verify only last one in the array
                 await _this.checkConsent([consents[consents.length - 1]], msg);
             }
-
         } catch (err) {
             console.error(err);
         }
-
-
         await _this.setState({sentMessages: [msg, ..._this.state.sentMessages]});
-
     }
 
     async addReceived(msg) {
@@ -731,32 +654,24 @@ class CrStoreSendBlockchain extends Component {
         // TODO!
         try {
             msg.decodedToken = await _this.state.DataReceiptLib.decode(msg.data); //, { complete: true });
-
             if (msg.decodedToken !== null) {
                 msg.verified = await _this.state.DataReceiptLib.verify(msg.decodedToken.payload.publicKey, msg.data);
             }
-
         } catch (err) {
             console.error(err);
         }
-
-        // console.log("SWARM HASH: ", msg.message.hash.address);
-
         try {
+            var lib = _this.state.DataReceiptLib;
+            let CM = await lib.getConsentManager(); 
             let consents = await CM.getConsentsFor("0x" + msg.message.hash.address);
-
-            if (consents && consents.length > 0) {
-                // TODO: verify only last one in the array
+            if (consents && consents.length > 0) { // TODO: verify only last one in the array
                 await _this.checkConsent([consents[consents.length - 1]], msg);
             }
 
         } catch (err) {
             console.error(err);
         }
-
-
         await _this.setState({receivedMessages: [msg, ..._this.state.receivedMessages]});
-
     }
 
     async checkConsent(consentAddresses, msg) {
@@ -767,16 +682,12 @@ class CrStoreSendBlockchain extends Component {
             try {
                 console.log("consentAddress ", consentAddress);
                 let consent = await _this.state.DataReceiptLib.getConsent(consentAddress);
-
                 console.log("consent: ", consent);
-
                 let us, ss, s, v, updated, status;
-
                 us = await consent.isUserSigned();
                 ss = await consent.isSubjectSigned();
                 s = await consent.isSigned();
                 v = await consent.isValid();
-
                 // if updated anything else than 0x0000000000000000000000000000000000000000
                 // then consent was updated with another consent
                 updated = await consent.isUpdatedWith();
@@ -785,19 +696,13 @@ class CrStoreSendBlockchain extends Component {
                 // 2 - expired
                 // 3 - revoked
                 status = await consent.status();
-
                 // console.log(consentAddress, 'signed (subject, user, both, valid)', ss, us, s, v);
                 // console.log('status', status, ' updated', updated);
-
                 let consentStatus = {'us': us, 'ss': ss, 's': s, 'v': v, 'updated': updated, 'status': status};
                 msg.consentStatus = consentStatus;
-
                 //return msg
-
             } catch (e) {
-
                 console.log("error ", e)
-
             }
         });
     }
@@ -805,7 +710,6 @@ class CrStoreSendBlockchain extends Component {
 
     getStatusDescription(statusId) {
         let statusLabel = 'n/a';
-
         switch (parseInt(statusId)) {
             case 0:
                 statusLabel = 'waiting for signatures';
@@ -819,15 +723,15 @@ class CrStoreSendBlockchain extends Component {
             case 3:
                 statusLabel = 'revoked';
                 break;
+            default:
+                statusLabel = 'unknown';
+                break;    
         }
-
         return statusLabel;
-
     }
 
     showConsentDetails(consentDetailsData, typeOfMessageInModal) {
         const _this = this;
-
         console.log(consentDetailsData);
 
         _this.setState({
@@ -840,9 +744,8 @@ class CrStoreSendBlockchain extends Component {
 
     toggleConsentDetailsModal() {
         const _this = this;
-
-        _this.setState({
-            showConsentDetailsModal: !_this.state.showConsentDetailsModal
+        this.setState({
+            showConsentDetailsModal: !this.state.showConsentDetailsModal
         });
 
         setTimeout(function () {
@@ -858,6 +761,8 @@ class CrStoreSendBlockchain extends Component {
 
     async crDetailsModalGiveConsent() {
         const _this = this;
+        var lib = _this.state.DataReceiptLib;
+        let CM = await lib.getConsentManager(); 
 
         let consents = await CM.getConsentsFor("0x" + _this.state.consentDetailsData.message.hash.address);
         let consent = null;
@@ -866,39 +771,31 @@ class CrStoreSendBlockchain extends Component {
             consent = await _this.state.DataReceiptLib.getConsent(consents[consents.length - 1]);
         }
 
-        let ss = await consent.isSubjectSigned();
-
+        //let ss = await consent.isSubjectSigned();
+        await consent.isSubjectSigned();
 
         if (consent) {
-            _this.setState({
-                loadingInModalInProgress: true
-            });
+            _this.setState({ loadingInModalInProgress: true });
 
             try {
                 await consent.signSubject();
-                await _this.setState({
-                    loadingInModalInProgress: false
-                });
+                await this.setState({ loadingInModalInProgress: false });
 
                 await toast.success("Consent given and signed on blockchain!");
-                await _this.getReceivedMessages();
+                await this.getReceivedMessages();
 
             } catch (e) {
-                //alert("Error: " + e);
-                _this.setState({
-                    loadingInModalInProgress: false
-                });
-
+                this.setState({ loadingInModalInProgress: false });
                 console.error(e);
                 await toast.error("Error: " + e);
             }
-
-
         }
     }
 
     async crDetailsModalRevokeConsent() {
         const _this = this;
+        var lib = _this.state.DataReceiptLib;
+        let CM = await lib.getConsentManager(); 
 
         let consents = await CM.getConsentsFor("0x" + _this.state.consentDetailsData.message.hash.address);
         let consent = null;
@@ -908,41 +805,28 @@ class CrStoreSendBlockchain extends Component {
         }
 
         if (consent) {
-            _this.setState({
-                loadingInModalInProgress: true
-            });
+            _this.setState({ loadingInModalInProgress: true });
 
             try {
                 await consent.revokeConsent();
-                await _this.getReceivedMessages();
+                await this.getReceivedMessages();
 
-                await _this.setState({
-                    loadingInModalInProgress: false
-                });
+                await this.setState({ loadingInModalInProgress: false });
 
                 await toast.success("Consent revoked!");
             } catch (e) {
-                await _this.setState({
-                    loadingInModalInProgress: false
-                });
-
+                await this.setState({ loadingInModalInProgress: false });
                 console.error(e);
                 await toast.error("Consent could not be revoked!");
             }
-
         }
     }
 
     componentDidMount() {
-        const _this = this;
-
-
         Hook(window.console, log => {
             this.setState(({logs}) => ({logs: [...logs, Decode(log)]}))
         });
-
         //document.getElementsByClassName("mainContent")[0].classList.replace('container', 'container-fluid');
-
         console.log("console initialized");
     }
 
@@ -1217,7 +1101,7 @@ class CrStoreSendBlockchain extends Component {
 
                                                     <div className="mt-3">
                                                         <a className={"btn btn-primary btn-block " + (_this.state.recipientAccountValid ? '' : 'disabled') }
-                                                           onClick={_this.sendTokenToDP}> Data controller - send CR
+                                                           onClick={_this.sendTokenToDP} href="#"> Data controller - send CR
                                                             JWT to Data principal</a>
                                                     </div>
 
@@ -1232,7 +1116,7 @@ class CrStoreSendBlockchain extends Component {
                                                     <div className="row">
                                                         <div className="col-md-12">
                                                             <a className={"btn btn-primary btn-block " + (_this.state.recipientAccountValid ? '' : 'disabled') }
-                                                               onClick={_this.blockchainSignAndSendTokenToDP}> Data
+                                                               onClick={_this.blockchainSignAndSendTokenToDP} href="#"> Data
                                                                 controller - Blockchain sign and
                                                                 send CR
                                                                 JWT to Data principal</a>
@@ -1406,7 +1290,7 @@ class CrStoreSendBlockchain extends Component {
                                         }
 
                                     </div>}
-                                />
+                                /> 
                             </div>
 
                         </div>
@@ -1555,10 +1439,8 @@ class CrStoreSendBlockchain extends Component {
                                         }
 
                                     </div>}
-                                />
+                                /> 
                             </div>
-
-
                         </div>
 
                         <ListGroup className="mt-3 mb-3">
@@ -1617,8 +1499,6 @@ class CrStoreSendBlockchain extends Component {
 
                             <div className="row">
                                 <div className="col-md-12 mb-3">
-
-
                                     <ConsentViewer type="text" data={_this.state.consentDetailsData.decodedToken}/>
                                 </div>
 
