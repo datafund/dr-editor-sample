@@ -639,7 +639,7 @@ class CrEditorViewer extends Component {
                                                                onClick={(e) => {
                                                                    if (this.state.privateKey === '') {
                                                                        alert("Valid private key is required!");
-                                                                       return;
+                                                                       return; 
                                                                    }
                                                                    _this.generateJwtRS256()
                                                                }}><i className="fas fa-lock"></i> Encode JWT

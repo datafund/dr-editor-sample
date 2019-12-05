@@ -6,11 +6,11 @@
 
 import React, {Component} from 'react';
 import {
-    Collapse,
+    Collapse, 
     Navbar,
     Nav,
     ButtonGroup, 
-    Button
+    Button 
 } from 'reactstrap';
 
 import {Link} from 'react-router-dom'
@@ -21,7 +21,7 @@ import CrEditorViewer from "../components/CrEditorViewer";
 import CrStoreSendBlockchain from "../components/CrStoreSendBlockchain";
 import ReceivedDataReceipts from "../components/ReceivedDataReceipts";
 //import FDS from 'fds.js';
-
+ 
 //const log = (type) => console.log.bind(console, type);
 
 /*
