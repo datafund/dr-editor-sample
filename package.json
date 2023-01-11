@@ -20,7 +20,7 @@
     "fds.js": "git+https://github.com/fairDataSociety/fds.js.git#multibox",
     "js-file-download": "^0.4.7",
     "jsoneditor-react": "^1.0.0",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.11",
     "lunchtype.css": "^1.0.1",
     "node-sass": "^4.9.4",
